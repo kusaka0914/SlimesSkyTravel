@@ -10,11 +10,6 @@
 #include <variant>
 #include <algorithm>
 
-static bool gamepadConnected = false;
-static int gamepadId = GameConstants::InputConstants::DEFAULT_GAMEPAD_ID;
-static bool gamepadButtons[GameConstants::InputConstants::MAX_GAMEPAD_BUTTONS] = {false}; // ボタンの状態を保存
-static bool gamepadButtonsLast[GameConstants::InputConstants::MAX_GAMEPAD_BUTTONS] = {false}; // 前フレームのボタン状態
-
 void InputSystem::mouse_callback(GLFWwindow* window, double xpos, double ypos) {
     GameState* gameState = static_cast<GameState*>(glfwGetWindowUserPointer(window));
     
@@ -156,16 +151,6 @@ void InputSystem::processInput(GLFWwindow* window, GameState& gameState, float d
             gameState.player.isShowingFrontTexture = false;  // 他の移動キーを押したらフロントテクスチャ表示を停止
         }
     }
-    
-    if (isGamepadConnected()) {
-        glm::vec2 gamepadStick = getGamepadLeftStick();
-        moveDir.x += gamepadStick.x;
-        moveDir.z -= gamepadStick.y; // Y軸を反転（ゲームパッドの上が前進）
-        
-        if (gamepadStick.y > 0.1f) { // 下方向の入力
-            gameState.player.isMovingBackward = true;
-        }
-    }
 
     if (glm::length(moveDir) > 0.0f) {
         moveDir = glm::normalize(moveDir);
@@ -198,13 +183,10 @@ void InputSystem::processJumpAndFloat(GLFWwindow* window, GameState& gameState, 
     }
     
     static bool spacePressed = false;
-    static bool gamepadJumpPressed = false;
     
     bool spaceCurrentlyPressed = glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS;
-    bool gamepadJumpCurrentlyPressed = isGamepadButtonPressed(0); // Aボタン（通常は0番）
     
-    bool shouldJump = (spaceCurrentlyPressed && !spacePressed) || 
-                     (gamepadJumpCurrentlyPressed && !gamepadJumpPressed);
+    bool shouldJump = spaceCurrentlyPressed && !spacePressed;
 
     if (shouldJump) {
         glm::vec3 playerSize = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -309,53 +291,4 @@ void InputSystem::processJumpAndFloat(GLFWwindow* window, GameState& gameState, 
         }
     }
     spacePressed = spaceCurrentlyPressed;
-    gamepadJumpPressed = gamepadJumpCurrentlyPressed;
 }
-
-void InputSystem::initializeGamepad() {
-    if (glfwJoystickPresent(gamepadId)) {
-        gamepadConnected = true;
-    } else {
-        gamepadConnected = false;
-    }
-}
-
-bool InputSystem::isGamepadConnected() {
-    gamepadConnected = glfwJoystickPresent(gamepadId);
-    return gamepadConnected;
-}
-
-glm::vec2 InputSystem::getGamepadLeftStick() {
-    if (!gamepadConnected) return glm::vec2(0.0f);
-    
-    int axesCount;
-    const float* axes = glfwGetJoystickAxes(gamepadId, &axesCount);
-    if (axesCount >= 2) {
-        float deadzone = 0.1f;
-        float x = std::abs(axes[0]) > deadzone ? axes[0] : 0.0f;
-        float y = std::abs(axes[1]) > deadzone ? axes[1] : 0.0f;
-        return glm::vec2(x, y);
-    }
-    return glm::vec2(0.0f);
-}
-
-bool InputSystem::isGamepadButtonPressed(int button) {
-    if (!gamepadConnected) return false;
-    
-    int buttonCount;
-    const unsigned char* buttons = glfwGetJoystickButtons(gamepadId, &buttonCount);
-    if (button < buttonCount) {
-        return buttons[button] == GLFW_PRESS;
-    }
-    return false;
-}
-
-bool InputSystem::isGamepadButtonJustPressed(int button) {
-    if (!gamepadConnected) return false;
-    
-    bool currentState = isGamepadButtonPressed(button);
-    bool justPressed = currentState && !gamepadButtonsLast[button];
-    gamepadButtonsLast[button] = currentState;
-    return justPressed;
-}
-

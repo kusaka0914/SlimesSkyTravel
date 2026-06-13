@@ -61,36 +61,4 @@ public:
      * @param audioManager オーディオマネージャー
      */
     static void processJumpAndFloat(GLFWwindow* window, GameState& gameState, float deltaTime, const glm::vec3& gravityDirection, PlatformSystem& platformSystem, io::AudioManager& audioManager);
-    
-    /**
-     * @brief ゲームパッドを初期化する
-     * @details ゲームパッドの接続を確認し、初期化します。
-     */
-    static void initializeGamepad();
-    
-    /**
-     * @brief ゲームパッドが接続されているか確認する
-     * @return 接続されている場合true
-     */
-    static bool isGamepadConnected();
-    
-    /**
-     * @brief ゲームパッドの左スティックの値を取得する
-     * @return 左スティックのX/Y値のベクター
-     */
-    static glm::vec2 getGamepadLeftStick();
-    
-    /**
-     * @brief ゲームパッドボタンが押されているか確認する
-     * @param button ボタン番号
-     * @return 押されている場合true
-     */
-    static bool isGamepadButtonPressed(int button);
-    
-    /**
-     * @brief ゲームパッドボタンが今フレームで押されたか確認する
-     * @param button ボタン番号
-     * @return 今フレームで押された場合true
-     */
-    static bool isGamepadButtonJustPressed(int button);
 };

@@ -17,9 +17,5 @@ namespace GameConstants {
         constexpr float MAX_CAMERA_DISTANCE = 50.0f;
         constexpr float MIN_CAMERA_PITCH = -89.0f;
         constexpr float MAX_CAMERA_PITCH = 89.0f;
-        
-        // ゲームパッド設定
-        constexpr int MAX_GAMEPAD_BUTTONS = 15;
-        constexpr int DEFAULT_GAMEPAD_ID = GLFW_JOYSTICK_1;
     }
 }

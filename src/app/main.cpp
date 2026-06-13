@@ -30,10 +30,8 @@
 #include "../game/online_leaderboard_manager.h"
 #include "game_loop.h"
 #include "tutorial_manager.h"
-#include "../core/constants/debug_config.h"
 
 int main(int argc, char* const argv[]) {
-    
     if (!glfwInit()) {
         std::cerr << "Failed to initialize GLFW" << std::endl;
         return -1;
@@ -41,15 +39,14 @@ int main(int argc, char* const argv[]) {
     
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);  // フルスクリーンなのでリサイズ不可
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
     glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE);
     
     GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
     const GLFWvidmode* videoMode = glfwGetVideoMode(primaryMonitor);
     
     GLFWwindow* window = glfwCreateWindow(videoMode->width, videoMode->height, 
-                                         GameConstants::WINDOW_TITLE, 
-                                         nullptr, nullptr);
+        "Slime's Sky Travel", nullptr, nullptr);
     if (!window) {
         ErrorHandler::handleGLFWError("window creation");
         glfwTerminate();
@@ -99,36 +96,18 @@ int main(int argc, char* const argv[]) {
     
     SaveManager::loadGameData(gameState);
     
-    int initialStage = 6;  // デフォルトはチュートリアルステージ
-    bool debugEnding = false;  // デバッグ用エンドロール表示フラグ
+    int initialStage = 6;
+    bool debugEnding = false;
     
     if (argc > 1) {
         if (strcmp(argv[1], "-e") == 0 || strcmp(argv[1], "--ending") == 0) {
             debugEnding = true;
-        } else if (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0) {
-            printf("Usage: %s [stage_number] [options]\n", argv[0]);
-            printf("  stage_number: 0-5 (default: 6 for tutorial)\n");
-            printf("  options:\n");
-            printf("    -e, --ending: Show ending sequence (debug mode)\n");
-            printf("    -h, --help: Show this help message\n");
-            printf("Examples:\n");
-            printf("  %s          # Start tutorial stage\n", argv[0]);
-            printf("  %s 5        # Start stage 5\n", argv[0]);
-            printf("  %s -e       # Show ending sequence\n", argv[0]);
-            printf("  %s 5 -e     # Start stage 5 and show ending\n", argv[0]);
-            return 0;
         } else {
             int requestedStage = std::atoi(argv[1]);
-            if (requestedStage >= 0 && requestedStage <= 5) {  // ステージ0-5を許可
+            if (requestedStage >= 0 && requestedStage <= 5) {
                 initialStage = requestedStage;
             } else {
                 printf("Invalid stage number: %d. Using default stage %d\n", requestedStage, initialStage);
-            }
-        }
-        
-        if (argc > 2) {
-            if (strcmp(argv[2], "-e") == 0 || strcmp(argv[2], "--ending") == 0) {
-                debugEnding = true;
             }
         }
     }
@@ -147,19 +126,16 @@ int main(int argc, char* const argv[]) {
     
     UIConfig::UIConfigManager::getInstance().loadConfig("assets/config/ui_config.json");
     
-    // ランキング設定ファイルを読み込む
     OnlineLeaderboardManager::loadConfigFromFile();
     
     if (debugEnding) {
         gameState.ui.isEndingSequence = true;
         gameState.ui.showStaffRoll = true;
         gameState.ui.staffRollTimer = 0.0f;
-        gameState.ui.showTitleScreen = false;  // エンドロール表示時はタイトル画面をスキップ
+        gameState.ui.showTitleScreen = false;
     } else {
         gameState.ui.showTitleScreen = true;
     }
-
-    InputSystem::initializeGamepad();
 
     std::map<int, InputUtils::KeyState> keyStates;
     for (int key : {GLFW_KEY_0, GLFW_KEY_1, GLFW_KEY_2, GLFW_KEY_3, GLFW_KEY_4, GLFW_KEY_5, GLFW_KEY_6, 
@@ -172,8 +148,7 @@ int main(int argc, char* const argv[]) {
     
     auto resetStageStartTime = [&startTime, &gameState]() {
         startTime = std::chrono::high_resolution_clock::now();
-        gameState.progress.timeLimitApplied = false; // カウントダウン時の時間設定フラグをリセット
-        DEBUG_PRINTF("DEBUG: timeLimitApplied reset to false\n");
+        gameState.progress.timeLimitApplied = false;
     };
     
     GameLoop::run(window, gameState, stageManager, platformSystem, renderer, uiRenderer, gameStateUIRenderer, keyStates, resetStageStartTime, startTime, audioManager);

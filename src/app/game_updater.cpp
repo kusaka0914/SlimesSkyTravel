@@ -4,14 +4,6 @@
 
 #include "game_updater.h"
 #include "game_loop.h"
-#include <iostream>
-#include <algorithm>
-#include <variant>
-#include <glm/gtc/matrix_transform.hpp>
-#include "../core/constants/game_constants.h"
-#include "../core/constants/debug_config.h"
-#include "../gfx/camera_system.h"
-#include "../gfx/texture_manager.h"
 #include "../game/gravity_system.h"
 #include "../game/switch_system.h"
 #include "../game/cannon_system.h"
@@ -19,30 +11,12 @@
 #include "../physics/physics_system.h"
 #include "../core/utils/physics_utils.h"
 #include "../core/utils/ui_config_manager.h"
-#include "../core/utils/resource_path.h"
 #include "../io/input_system.h"
-#include "../io/audio_manager.h"
-#include "../gfx/minimap_renderer.h"
 #include "../game/replay_manager.h"
 #include "../game/save_manager.h"
-#include "../game/online_leaderboard_manager.h"
-#include "../core/types/platform_types.h"
 #include "input_handler.h"
-#include <set>
-#include <map>
-#include <ctime>
-#include <iomanip>
-#include <sstream>
-#include <algorithm>
 
 namespace GameLoop {
-
-template<typename... Ts>
-struct overloaded : Ts... { using Ts::operator()...; };
-
-template<typename... Ts>
-overloaded(Ts...) -> overloaded<Ts...>;
-
 void GameUpdater::updateGameState(
     GLFWwindow* window, 
     GameState& gameState, 
@@ -65,7 +39,7 @@ void GameUpdater::updateGameState(
     }
     
     if (gameState.ui.isTransitioning) {
-        const float FADE_DURATION = 0.5f;  // フェード時間（秒）
+        const float FADE_DURATION = 0.5f;
         gameState.ui.transitionTimer += deltaTime;
         
         if (gameState.ui.transitionType == UIState::TransitionType::FADE_OUT) {

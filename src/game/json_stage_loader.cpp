@@ -4,7 +4,6 @@
 
 #include "json_stage_loader.h"
 #include "../core/utils/stage_utils.h"
-#include "../core/constants/debug_config.h"
 #include "../core/constants/stage_constants.h"
 #include "../core/error_handler.h"
 #include <fstream>
@@ -52,8 +51,6 @@ bool JsonStageLoader::loadStageFromJSON(const std::string& filename, GameState& 
         std::ifstream file(filename);
         nlohmann::json root;
         file >> root;
-        
-        DEBUG_PRINTF("DEBUG: Loading stage from JSON: %s\n", filename.c_str());
         
         if (root.contains("stageInfo")) {
             if (!parseStageInfo(root["stageInfo"], gameState)) {
@@ -180,7 +177,6 @@ bool JsonStageLoader::loadStageFromJSON(const std::string& filename, GameState& 
             }
         }
         
-        DEBUG_PRINTF("DEBUG: Successfully loaded stage from JSON: %s\n", filename.c_str());
         return true;
         
     } catch (const std::exception& e) {
@@ -238,11 +234,6 @@ bool JsonStageLoader::parseStageInfo(const nlohmann::json& stageInfo, GameState&
             printf("Time limit: %.1f seconds\n", gameState.progress.timeLimit);
         }
         
-        DEBUG_PRINTF("DEBUG: Parsed stage info - Player: (%.1f, %.1f, %.1f), Goal: (%.1f, %.1f, %.1f), Time: %.1f\n",
-                    gameState.player.position.x, gameState.player.position.y, gameState.player.position.z,
-                    gameState.progress.goalPosition.x, gameState.progress.goalPosition.y, gameState.progress.goalPosition.z,
-                    gameState.progress.timeLimit);
-        
         return true;
         
     } catch (const std::exception& e) {
@@ -278,7 +269,6 @@ bool JsonStageLoader::parseItems(const nlohmann::json& root, GameState& gameStat
         
         StageUtils::createItemsFromConfig(gameState, itemConfigs);
         StageUtils::createItemPlatforms(platformSystem, itemConfigs);
-        DEBUG_PRINTF("DEBUG: Created %zu items and their platforms from JSON\n", itemConfigs.size());
         
         return true;
         
@@ -321,7 +311,6 @@ bool JsonStageLoader::parseStaticPlatforms(const nlohmann::json& root, GameState
         }
         
         StageUtils::createStaticPlatformsFromConfig(gameState, platformSystem, platformConfigs);
-        DEBUG_PRINTF("DEBUG: Created %zu static platforms from JSON\n", platformConfigs.size());
         
         return true;
         
@@ -352,7 +341,6 @@ bool JsonStageLoader::parsePatrolPlatforms(const nlohmann::json& root, GameState
         }
         
         StageUtils::createPatrolPlatformsFromConfig(gameState, platformSystem, platformConfigs);
-        DEBUG_PRINTF("DEBUG: Created %zu patrol platforms from JSON\n", platformConfigs.size());
         
         return true;
         
@@ -363,12 +351,10 @@ bool JsonStageLoader::parsePatrolPlatforms(const nlohmann::json& root, GameState
 }
 
 bool JsonStageLoader::parseMovingPlatforms(const nlohmann::json& root, GameState& gameState, PlatformSystem& platformSystem) {
-    DEBUG_PRINTF("DEBUG: Moving platforms parsing not implemented yet\n");
     return true;
 }
 
 bool JsonStageLoader::parseRotatingPlatforms(const nlohmann::json& root, GameState& gameState, PlatformSystem& platformSystem) {
-    DEBUG_PRINTF("DEBUG: Rotating platforms parsing not implemented yet\n");
     return true;
 }
 
@@ -403,7 +389,6 @@ bool JsonStageLoader::parseDisappearingPlatforms(const nlohmann::json& root, Gam
     }
     
     StageUtils::createCyclingDisappearingPlatforms(gameState, platformSystem, configs);
-    DEBUG_PRINTF("DEBUG: Created %zu cycling disappearing platforms from JSON\n", configs.size());
     return true;
 }
 
@@ -456,7 +441,6 @@ bool JsonStageLoader::parseConsecutiveCyclingPlatforms(const nlohmann::json& roo
     }
     
     StageUtils::createConsecutiveCyclingPlatforms(gameState, platformSystem, consecutiveConfigs);
-    DEBUG_PRINTF("DEBUG: Created %zu consecutive cycling platform groups from JSON\n", consecutiveConfigs.size());
     return true;
 }
 
@@ -504,17 +488,14 @@ bool JsonStageLoader::parseFlyingPlatforms(const nlohmann::json& root, GameState
     }
     
     StageUtils::createFlyingPlatforms(gameState, platformSystem, flyingPlatforms);
-    DEBUG_PRINTF("DEBUG: Created %zu flying platforms from JSON\n", flyingPlatforms.size());
     return true;
 }
 
 bool JsonStageLoader::parseTeleportPlatforms(const nlohmann::json& root, GameState& gameState, PlatformSystem& platformSystem) {
-    DEBUG_PRINTF("DEBUG: Teleport platforms parsing not implemented yet\n");
     return true;
 }
 
 bool JsonStageLoader::parseJumpPads(const nlohmann::json& root, GameState& gameState, PlatformSystem& platformSystem) {
-    DEBUG_PRINTF("DEBUG: Jump pads parsing not implemented yet\n");
     return true;
 }
 
@@ -549,7 +530,6 @@ bool JsonStageLoader::parseStageSelectionAreas(const nlohmann::json& root, GameS
                    stageNumber, position.x, position.y, position.z, color.r, color.g, color.b);
         }
         
-        DEBUG_PRINTF("DEBUG: Created %zu stage selection areas from JSON\n", root["stageSelectionAreas"].size());
         return true;
         
     } catch (const std::exception& e) {
@@ -621,9 +601,6 @@ bool JsonStageLoader::parseConditionalCyclingDisappearingPlatforms(const nlohman
                 }
                 
                 StageUtils::createCyclingDisappearingPlatforms(gameState, platformSystem, configs);
-                DEBUG_PRINTF("DEBUG: Created %zu conditional cycling disappearing platforms for condition: %s\n", configs.size(), condition.c_str());
-            } else {
-                DEBUG_PRINTF("DEBUG: Condition '%s' not met, skipping conditional platforms\n", condition.c_str());
             }
         }
         
@@ -668,9 +645,6 @@ bool JsonStageLoader::parseConditionalPatrolPlatforms(const nlohmann::json& root
                 }
                 
                 StageUtils::createPatrolPlatformsFromConfig(gameState, platformSystem, configs);
-                DEBUG_PRINTF("DEBUG: Created %zu conditional patrol platforms for condition: %s\n", configs.size(), condition.c_str());
-            } else {
-                DEBUG_PRINTF("DEBUG: Condition '%s' not met, skipping conditional patrol platforms\n", condition.c_str());
             }
         }
         
@@ -720,9 +694,6 @@ bool JsonStageLoader::parseConditionalFlyingPlatforms(const nlohmann::json& root
                 }
                 
                 StageUtils::createFlyingPlatforms(gameState, platformSystem, flyingPlatforms);
-                DEBUG_PRINTF("DEBUG: Created %zu conditional flying platforms for condition: %s\n", flyingPlatforms.size(), condition.c_str());
-            } else {
-                DEBUG_PRINTF("DEBUG: Condition '%s' not met, skipping conditional flying platforms\n", condition.c_str());
             }
         }
         

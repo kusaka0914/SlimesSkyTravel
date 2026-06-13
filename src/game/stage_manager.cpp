@@ -5,7 +5,6 @@
 #include "stage_manager.h"
 #include "json_stage_loader.h"
 #include "../core/constants/game_constants.h"
-#include "../core/constants/debug_config.h"
 #include "../core/utils/stage_utils.h"
 #include "../core/utils/resource_path.h"
 #include "../core/error_handler.h"
@@ -145,7 +144,6 @@ bool StageManager::loadStage(int stageNumber, GameState& gameState, PlatformSyst
     // リプレイモードの場合はclearTimeをリセットしない（リプレイ開始時に設定される）
     if (!gameState.replay.isReplayMode) {
         gameState.progress.clearTime = 0.0f;         // クリア時間をリセット
-        DEBUG_PRINTF("DEBUG: clearTime reset to 0.0f for stage %d\n", stageNumber);
     }
     gameState.progress.isTimeUp = false;         // 時間切れフラグをリセット
     gameState.progress.isStageCompleted = false; // ステージ完了フラグをリセット
