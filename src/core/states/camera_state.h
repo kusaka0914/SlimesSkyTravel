@@ -10,12 +10,12 @@
  * @details カメラの角度、距離、マウス入力、視点モードなどの状態を保持します。
  */
 struct CameraState {
-    float yaw = 90.0f;  // ヨー角（単位: 度）
-    float pitch = 0.0f;  // ピッチ角（単位: 度）
-    float distance = 30.0f;  // カメラ距離（単位: ワールド座標）
+    float yaw = 90.0f;
+    float pitch = 0.0f;
+    float distance = 30.0f;
     bool firstMouse = true;
-    float lastMouseX = 640.0f;  // 前回のマウスX座標（ピクセル）
-    float lastMouseY = 360.0f;  // 前回のマウスY座標（ピクセル）
+    float lastMouseX = 640.0f;
+    float lastMouseY = 360.0f;
     
     bool isFirstPersonView = false;
     bool isFirstPersonMode = false;

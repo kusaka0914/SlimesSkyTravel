@@ -13,7 +13,7 @@
 #include <vector>
 #include <map>
 #include <functional>
-#include "replay_state.h"
+#include "../core/states/replay_state.h"
 
 /**
  * @brief ランキングエントリ
@@ -34,13 +34,6 @@ struct LeaderboardEntry {
  */
 class OnlineLeaderboardManager {
 public:
-    /**
-     * @brief APIベースURLを設定する
-     * @details デフォルトは http://localhost:3000 です。
-     * 
-     * @param baseUrl APIベースURL
-     */
-    static void setBaseUrl(const std::string& baseUrl);
     
     /**
      * @brief プレイヤー名を設定する
@@ -90,15 +83,6 @@ public:
                            std::function<void(const ReplayData*)> callback);
     
     /**
-     * @brief 全ステージのトップ記録を取得する
-     * @details 非同期でAPIから全ステージのトップ記録を取得します。
-     * 
-     * @param callback 取得完了時のコールバック関数（成功時: topRecords, 失敗時: 空マップ）
-     */
-    static void fetchGlobalTopRecords(
-        std::function<void(const std::map<int, LeaderboardEntry>&)> callback);
-    
-    /**
      * @brief オンライン機能が有効かどうかを確認する
      * @details ネットワーク接続やAPIの可用性を確認します。
      * 
@@ -144,13 +128,5 @@ private:
      * @return 成功時true
      */
     static bool parseLeaderboardJson(const std::string& jsonStr, std::vector<LeaderboardEntry>& entries);
-    
-    /**
-     * @brief JSON文字列をグローバルトップ記録のマップに変換する
-     * @param jsonStr JSON文字列
-     * @param topRecords 変換結果を受け取るマップ
-     * @return 成功時true
-     */
-    static bool parseGlobalTopJson(const std::string& jsonStr, std::map<int, LeaderboardEntry>& topRecords);
 };
 

@@ -10,7 +10,6 @@
 #include <map>
 #include <type_traits>
 #include <nlohmann/json.hpp>
-#include "../error_handler.h"
 
 namespace UIConfig {
     /**
@@ -348,8 +347,6 @@ namespace UIConfig {
             } else if constexpr (std::is_same_v<T, UISkillConfig>) {
                 return parseUISkillConfig(jsonValue);
             } else {
-                // 未知の型
-                ErrorHandler::logErrorFormat("UI Config Error: Unsupported type for path '%s'", jsonPath.c_str());
                 T defaultConfig;
                 return defaultConfig;
             }

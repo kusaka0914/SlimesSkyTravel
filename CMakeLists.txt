@@ -48,14 +48,10 @@ add_executable(SlimesSkyTravel
     src/gfx/renderer_3d.cpp
     src/gfx/texture_manager.cpp
     src/gfx/minimap_renderer.cpp
-    src/game/game_state.cpp
+    src/core/states/game_state.cpp
     src/game/stage_manager.cpp
     src/game/platform_system.cpp
     src/game/json_stage_loader.cpp
-    src/game/stage_editor.cpp
-    src/game/cannon_system.cpp
-    src/game/switch_system.cpp
-    src/game/gravity_system.cpp
     src/game/replay_manager.cpp
     src/game/save_manager.cpp
     src/game/online_leaderboard_manager.cpp

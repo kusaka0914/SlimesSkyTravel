@@ -14,7 +14,7 @@
 #include <set>
 #include <string>
 #include <glm/glm.hpp>
-#include "../core/types/platform_types.h"
+#include "../types/platform_types.h"
 #include "player_state.h"
 #include "camera_state.h"
 #include "item_state.h"
@@ -23,8 +23,6 @@
 #include "replay_state.h"
 #include "ui_state.h"
 
-struct EditorState;
-
 /**
  * @brief ゲーム全体の状態を管理する構造体
  * @details 各サブシステムの状態を統合的に管理します。
@@ -32,7 +30,6 @@ struct EditorState;
  * ReplayState、UIStateなどのサブシステム状態を保持します。
  */
 struct GameState {
-    // 分割された状態構造体
     PlayerState player;
     CameraState camera;
     ItemState items;
@@ -40,7 +37,6 @@ struct GameState {
     GameProgressState progress;
     ReplayState replay;
     UIState ui;
-    
     
     struct Platform {
         glm::vec3 position;
@@ -93,52 +89,11 @@ struct GameState {
         bool returnToOriginal;
     };
     
-    struct Cannon {
-        glm::vec3 position;
-        glm::vec3 size;
-        glm::vec3 color;
-        glm::vec3 targetPosition;
-        float power;  // 発射威力（単位: ワールド座標/秒）
-        bool isActive;
-        bool hasPlayerInside;
-        float cooldownTimer;  // クールダウンタイマー（単位: 秒）
-        float cooldownTime;  // クールダウン時間（単位: 秒）
-        glm::vec3 launchDirection;
-    };
-    
-    struct GravityZone {
-        glm::vec3 position;
-        glm::vec3 size;
-        glm::vec3 gravityDirection;
-        float radius;  // 重力ゾーンの半径（単位: ワールド座標）
-        bool isActive;
-    };
-    
-    struct Switch {
-        glm::vec3 position;
-        glm::vec3 size;
-        glm::vec3 color;
-        bool isPressed;
-        bool isToggle;
-        std::vector<int> targetPlatformIndices;
-        std::vector<bool> targetStates;
-        float pressTimer;  // 押下タイマー（単位: 秒）
-        float cooldownTimer;  // クールダウンタイマー（単位: 秒）
-        bool isMultiSwitch;
-        int multiSwitchGroup;
-    };
-    
-    std::vector<Cannon> cannons;
     std::vector<Platform> platforms;
-    std::vector<GravityZone> gravityZones;
-    std::vector<Switch> switches;
     
     bool audioEnabled = true;
     std::string currentBGM = "";
     bool bgmPlaying = false;
-    
-    EditorState* editorState = nullptr;
-    
 };
 
 /**

@@ -7,18 +7,15 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // ミドルウェア
-app.use(cors()); // CORS許可（開発用）
+app.use(cors());
 app.use(bodyParser.json());
 
-// PostgreSQL接続設定
-// RenderのPostgreSQLを使用する場合、環境変数DATABASE_URLが自動的に設定される
-// ローカル開発時は、.envファイルまたは環境変数で設定
+
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL || 'postgresql://localhost:5432/leaderboard',
     ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
 });
 
-// データベース接続テスト
 pool.on('connect', () => {
     console.log('Connected to PostgreSQL database');
 });
@@ -28,7 +25,6 @@ pool.on('error', (err) => {
     process.exit(-1);
 });
 
-// テーブル作成（初回起動時のみ）
 async function initializeDatabase() {
     try {
         // leaderboardテーブル
@@ -74,10 +70,8 @@ async function initializeDatabase() {
     }
 }
 
-// データベース初期化
 initializeDatabase();
 
-// ヘルスチェック
 app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', message: 'Leaderboard API is running' });
 });
@@ -123,8 +117,7 @@ app.get('/api/leaderboard/:stageNumber', async (req, res) => {
 // タイム記録の送信
 app.post('/api/leaderboard', async (req, res) => {
     const { stageNumber, time, playerName, replayData } = req.body;
-    
-    // バリデーション
+
     if (!stageNumber || !time || !playerName) {
         return res.status(400).json({ 
             error: 'Missing required fields: stageNumber, time, playerName' 
@@ -150,7 +143,6 @@ app.post('/api/leaderboard', async (req, res) => {
     try {
         await client.query('BEGIN');
         
-        // ランキングに挿入
         const leaderboardResult = await client.query(
             `INSERT INTO leaderboard ("stageNumber", "playerName", time) 
              VALUES ($1, $2, $3) 
@@ -160,7 +152,6 @@ app.post('/api/leaderboard', async (req, res) => {
         
         const leaderboardId = leaderboardResult.rows[0].id;
         
-        // リプレイデータがあれば保存
         if (replayData) {
             const replayDataJson = JSON.stringify(replayData);
             await client.query(
@@ -221,43 +212,11 @@ app.get('/api/replay/:leaderboardId', async (req, res) => {
     }
 });
 
-// 全ステージのトップ記録取得
-app.get('/api/leaderboard/global/top', async (req, res) => {
-    try {
-        const result = await pool.query(
-            `SELECT "stageNumber", "playerName", time, timestamp
-             FROM leaderboard l1
-             WHERE time = (
-                 SELECT MIN(time)
-                 FROM leaderboard l2
-                 WHERE l2."stageNumber" = l1."stageNumber"
-             )
-             ORDER BY "stageNumber"`
-        );
-        
-        const topRecords = {};
-        result.rows.forEach(row => {
-            topRecords[row.stageNumber] = {
-                playerName: row.playerName,
-                time: parseFloat(row.time),
-                timestamp: row.timestamp
-            };
-        });
-        
-        res.json({ topRecords });
-    } catch (err) {
-        console.error('Database error:', err);
-        res.status(500).json({ error: 'Database error' });
-    }
-});
-
-// エラーハンドリング
 app.use((err, req, res, next) => {
     console.error('Error:', err);
     res.status(500).json({ error: 'Internal server error' });
 });
 
-// サーバー起動
 app.listen(PORT, () => {
     console.log(`Leaderboard API server running on http://localhost:${PORT}`);
     console.log(`Health check: http://localhost:${PORT}/api/health`);

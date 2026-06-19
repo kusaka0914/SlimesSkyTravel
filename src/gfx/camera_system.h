@@ -13,7 +13,7 @@
 #include <glm/glm.hpp>
 #include <cmath>
 #include "opengl_renderer.h"
-#include "../game/game_state.h"
+#include "../core/states/game_state.h"
 #include "../game/stage_manager.h"
 #include "../core/constants/game_constants.h"
 

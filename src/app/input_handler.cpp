@@ -79,7 +79,7 @@ void InputHandler::processStageSelectionAction(
     if (hasClearedStage) {
         gameState.ui.showTimeAttackSelectionUI = true;
         gameState.ui.modeSelectionTargetStage = stageNumber;
-        gameState.ui.blockEnterUntilReleased = true;  // 直前のENTERを無視
+        gameState.ui.blockEnterUntilReleased = true;
         gameState.progress.selectedSecretStarType = GameProgressState::SecretStarType::NONE;
         gameState.progress.isTimeAttackMode = false;
     } else {
@@ -91,7 +91,7 @@ void InputHandler::processStageSelectionAction(
         gameState.ui.readyScreenSpeedLevel = 0;
         gameState.progress.timeScale = 1.0f;
         gameState.progress.timeScaleLevel = 0;
-        gameState.progress.isTimeAttackMode = false;  // 初めて入る場合はNORMALモード
+        gameState.progress.isTimeAttackMode = false;
     }
 }
 
@@ -99,25 +99,13 @@ void InputHandler::handleInputProcessing(GLFWwindow* window, GameState& gameStat
                               PlatformSystem& platformSystem, 
                               std::map<int, InputUtils::KeyState>& keyStates,
                               std::function<void()> resetStageStartTime, float scaledDeltaTime, io::AudioManager& audioManager) {
-        // リーダーボードUI表示中はプレイヤー移動を無効化
         if (gameState.ui.showLeaderboardUI) {
             return;
         }
         
         if (gameState.replay.isReplayMode) {
-            // デバッグ: リプレイモード中の入力処理が呼ばれていることを確認
-            static int debugInputCount = 0;
-            debugInputCount++;
-            if (debugInputCount % 60 == 0) {  // 60フレームごとにログ出力（約1秒）
-                printf("REPLAY INPUT: Mode active - paused: %s, speed: %.1fx, playbackTime: %.2f\n",
-                       gameState.replay.isReplayPaused ? "true" : "false",
-                       gameState.replay.replayPlaybackSpeed,
-                       gameState.replay.replayPlaybackTime);
-            }
-            
             if (keyStates[GLFW_KEY_SPACE].justPressed()) {
                 gameState.replay.isReplayPaused = !gameState.replay.isReplayPaused;
-                printf("REPLAY: %s\n", gameState.replay.isReplayPaused ? "Paused" : "Resumed");
             }
             
             if (keyStates[GLFW_KEY_T].justPressed()) {
@@ -128,48 +116,46 @@ void InputHandler::handleInputProcessing(GLFWwindow* window, GameState& gameStat
                 } else {
                     gameState.replay.replayPlaybackSpeed = 0.3f;
                 }
-                printf("REPLAY: Speed changed to %.1fx\n", gameState.replay.replayPlaybackSpeed);
             }
             
             if (keyStates[GLFW_KEY_ESCAPE].justPressed()) {
                 gameState.replay.isReplayMode = false;
                 gameState.replay.isReplayPaused = false;
                 gameState.replay.replayPlaybackTime = 0.0f;
-                printf("REPLAY: Stopped\n");
             }
-            return;  // リプレイモード中は他の入力処理をスキップ
+            return;
         }
         
         bool tutorialInputEnabled = true;
         if (gameState.progress.isTutorialStage) {
             if (gameState.progress.tutorialStepCompleted) {
-                tutorialInputEnabled = false;  // ステップ完了時は入力無効
+                tutorialInputEnabled = false;
             } else if (gameState.progress.tutorialStep == 6) {
-                tutorialInputEnabled = false;  // ステップ6は動けない
+                tutorialInputEnabled = false;
             } else if (gameState.progress.tutorialStep >= 7) {
-                tutorialInputEnabled = true;   // ステップ7以降は動ける（アイテム取得やゴール到達のため）
+                tutorialInputEnabled = true;
             } else {
                 switch (gameState.progress.tutorialStep) {
-                    case 0: // Wキーのステップ
+                    case 0:
                         tutorialInputEnabled = (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS);
                         break;
-                    case 1: // Aキーのステップ
+                    case 1:
                         tutorialInputEnabled = (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS);
                         break;
-                    case 2: // Sキーのステップ
+                    case 2:
                         tutorialInputEnabled = (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS);
                         break;
-                    case 3: // Dキーのステップ
+                    case 3:
                         tutorialInputEnabled = (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS);
                         break;
-                    case 4: // SPACEキーのステップ
+                    case 4:
                         tutorialInputEnabled = (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS);
                         break;
-                    case 5: // Tキーのステップ
+                    case 5:
                         tutorialInputEnabled = keyStates[GLFW_KEY_T].justPressed();
                         break;
                     default:
-                        tutorialInputEnabled = true; // ステップ6以降は全て有効
+                        tutorialInputEnabled = true;
                         break;
                 }
             }
@@ -183,6 +169,7 @@ void InputHandler::handleInputProcessing(GLFWwindow* window, GameState& gameStat
         }
         lastTutorialStepCompleted = gameState.progress.tutorialStepCompleted;
         
+        // ワープ処理
         for (int key = GLFW_KEY_0; key <= GLFW_KEY_6; key++) {
             if (keyStates[key].justPressed()) {
                 if (gameState.ui.showWarpTutorialUI) { continue; }
@@ -243,7 +230,6 @@ void InputHandler::handleInputProcessing(GLFWwindow* window, GameState& gameStat
         
         if (keyStates[GLFW_KEY_E].justPressed() && stageManager.getCurrentStage() == 0 && !gameState.ui.showModeSelectionUI && !gameState.ui.showTimeAttackSelectionUI) {
             gameState.progress.isEasyMode = !gameState.progress.isEasyMode;
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
         
         if (stageManager.getCurrentStage() == 0) {
@@ -321,52 +307,51 @@ void InputHandler::handleInputProcessing(GLFWwindow* window, GameState& gameStat
         if (gameState.ui.showStage0Tutorial && stageManager.getCurrentStage() == 0) {
             if (gameState.ui.blockEnterUntilReleased) {
                 if (glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_RELEASE) {
-                    gameState.ui.blockEnterUntilReleased = false; // 離されたのを確認
+                    gameState.ui.blockEnterUntilReleased = false;
                 }
                 return;
             }
 
             if (keyStates[GLFW_KEY_ENTER].justPressed()) {
                 gameState.ui.showStage0Tutorial = false;
-                gameState.ui.showEasyModeExplanationUI = true; // EASYモード説明UIを表示
+                gameState.ui.showEasyModeExplanationUI = true;
                 gameState.ui.blockEnterUntilReleased = true;
-                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                
             }
         }
         
         if (gameState.ui.showEasyModeExplanationUI) {
             if (gameState.ui.blockEnterUntilReleased) {
                 if (glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_RELEASE) {
-                    gameState.ui.blockEnterUntilReleased = false; // 離されたのを確認
+                    gameState.ui.blockEnterUntilReleased = false;
                 }
                 return;
             }
 
             if (keyStates[GLFW_KEY_ENTER].justPressed()) {
                 gameState.ui.showEasyModeExplanationUI = false;
-                gameState.ui.showModeSelectionUI = true; // モード選択UIを表示
+                gameState.ui.showModeSelectionUI = true;
                 gameState.ui.blockEnterUntilReleased = true;
-                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                
             }
         }
         
         if (gameState.ui.showModeSelectionUI) {
             if (keyStates[GLFW_KEY_T].justPressed()) {
                 gameState.progress.isEasyMode = !gameState.progress.isEasyMode;
-                printf("MODE SELECTION: %s\n", gameState.progress.isEasyMode ? "EASY" : "NORMAL");
-                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                
             }
             
             if (gameState.ui.blockEnterUntilReleased) {
                 if (glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_RELEASE) {
-                    gameState.ui.blockEnterUntilReleased = false; // 離されたのを確認
+                    gameState.ui.blockEnterUntilReleased = false;
                 }
                 return;
             }
             
             if (keyStates[GLFW_KEY_ENTER].justPressed()) {
                 gameState.ui.showModeSelectionUI = false;
-                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                
             }
         }
         
@@ -391,41 +376,38 @@ void InputHandler::handleInputProcessing(GLFWwindow* window, GameState& gameStat
                 } else {
                     gameState.progress.selectedSecretStarType = GameProgressState::SecretStarType::MAX_SPEED_STAR;
                 }
-                printf("SECRET STAR SELECTION: %d (0=NONE, 1=MAX_SPEED, 2=SHADOW, 3=IMMERSIVE)\n", static_cast<int>(gameState.progress.selectedSecretStarType));
-                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                
             }
             
             if (gameState.ui.blockEnterUntilReleased) {
                 if (glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_RELEASE) {
-                    gameState.ui.blockEnterUntilReleased = false; // 離されたのを確認
-                    printf("SECRET STAR: ENTER released, blockEnterUntilReleased = false\n");
+                    gameState.ui.blockEnterUntilReleased = false;
                 }
                 return;
             }
             
             if (keyStates[GLFW_KEY_ENTER].justPressed()) {
-                printf("SECRET STAR: ENTER pressed, selectedType = %d\n", static_cast<int>(gameState.progress.selectedSecretStarType));
                 int targetStage = gameState.ui.modeSelectionTargetStage;
                 gameState.ui.showSecretStarSelectionUI = false;
-                gameState.ui.showTimeAttackSelectionUI = false;  // 念のためタイムアタック選択UIも無効化
+                gameState.ui.showTimeAttackSelectionUI = false;
                 gameState.ui.modeSelectionTargetStage = 0;
-                gameState.ui.blockEnterUntilReleased = false;  // ブロックを解除
+                gameState.ui.blockEnterUntilReleased = false;
                 
                 resetStageStartTime();
                 gameState.progress.lives = 6;
                 stageManager.goToStage(targetStage, gameState, platformSystem);
                 
-                gameState.progress.isTimeAttackMode = false;  // SECRET STARモード時はタイムアタックモードを無効化
+                gameState.progress.isTimeAttackMode = false;
                 
                 if (gameState.progress.selectedSecretStarType == GameProgressState::SecretStarType::MAX_SPEED_STAR) {
-                    gameState.ui.readyScreenShown = true;  // ready画面をスキップしたことを記録
-                    gameState.ui.showReadyScreen = false;  // ready画面を表示しない
-                    gameState.ui.isCountdownActive = true;  // カウントダウンを開始
-                    gameState.ui.countdownTimer = 3.0f;  // カウントダウンタイマーを設定
+                    gameState.ui.readyScreenShown = true;
+                    gameState.ui.showReadyScreen = false;
+                    gameState.ui.isCountdownActive = true;
+                    gameState.ui.countdownTimer = 3.0f;
                     gameState.ui.readyScreenSpeedLevel = 0;
                     
                     gameState.progress.timeScale = 3.0f;
-                    gameState.progress.timeScaleLevel = 2;  // 3倍に設定
+                    gameState.progress.timeScaleLevel = 2;
                 } else {
                     gameState.ui.showReadyScreen = true;
                     gameState.ui.readyScreenShown = false;
@@ -450,9 +432,9 @@ void InputHandler::handleInputProcessing(GLFWwindow* window, GameState& gameStat
                     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
                 }
                 
-                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                
             }
-            return;  // SECRET STAR選択UI表示中は他のUI処理をスキップ
+            return;
         }
         
         if (gameState.ui.showTimeAttackSelectionUI) {
@@ -472,15 +454,12 @@ void InputHandler::handleInputProcessing(GLFWwindow* window, GameState& gameStat
                         gameState.progress.selectedSecretStarType = GameProgressState::SecretStarType::NONE;
                     }
                 }
-                printf("MODE SELECTION: %s\n", 
-                    gameState.progress.isTimeAttackMode ? "TIME ATTACK" : 
-                    (gameState.progress.selectedSecretStarType != GameProgressState::SecretStarType::NONE ? "SECRET STAR" : "NORMAL"));
-                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                
             }
             
             if (gameState.ui.blockEnterUntilReleased) {
                 if (glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_RELEASE) {
-                    gameState.ui.blockEnterUntilReleased = false; // 離されたのを確認
+                    gameState.ui.blockEnterUntilReleased = false;
                 }
                 return;
             }
@@ -490,7 +469,7 @@ void InputHandler::handleInputProcessing(GLFWwindow* window, GameState& gameStat
                     gameState.ui.showTimeAttackSelectionUI = false;
                     gameState.ui.showSecretStarSelectionUI = true;
                     gameState.ui.blockEnterUntilReleased = true;
-                    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                    
                     return;
                 }
                 
@@ -609,7 +588,6 @@ void InputHandler::handleInputProcessing(GLFWwindow* window, GameState& gameStat
                             gameState.ui.showStageClearUI = false;
                             gameState.progress.isStageCompleted = false;
                             gameState.progress.isGoalReached = false;
-                            printf("REPLAY: Started local replay playback for stage %d (Clear time: %.2fs)\n", currentStage, gameState.replay.currentReplay.clearTime);
                             return;  // リプレイ再生開始時は他の処理をスキップ
                         }
                     }

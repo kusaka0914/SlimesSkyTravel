@@ -6,9 +6,6 @@
 
 void initializeGameState(GameState& gameState) {    
     gameState.platforms.clear();
-    gameState.gravityZones.clear();
-    gameState.switches.clear();
-    gameState.cannons.clear(); 
     gameState.progress.isGoalReached = false;
     gameState.progress.clearTime = 0.0f;
 

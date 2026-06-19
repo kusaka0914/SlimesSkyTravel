@@ -5,7 +5,7 @@
  */
 #pragma once
 
-#include "game_state.h"
+#include "../core/states/game_state.h"
 #include "platform_system.h"
 #include <vector>
 #include <functional>
@@ -19,13 +19,9 @@
  */
 struct StageData {
     int stageNumber;
-    std::string stageName;
-    glm::vec3 playerStartPosition;
-    glm::vec3 goalPosition;
     std::function<void(GameState&, PlatformSystem&)> generateFunction;
     bool isUnlocked;
     bool isCompleted;
-    float timeLimit;
 };
 
 /**
@@ -55,39 +51,12 @@ public:
     bool loadStage(int stageNumber, GameState& gameState, PlatformSystem& platformSystem);
     
     /**
-     * @brief ステージを解放する
-     * @details 指定されたステージ番号のステージを解放します。
-     * 
-     * @param stageNumber ステージ番号
-     * @param gameState ゲーム状態（オプション）
-     * @return 解放成功時true
-     */
-    bool unlockStage(int stageNumber, GameState* gameState = nullptr);
-    
-    /**
-     * @brief 星数でステージを解放する
-     * @details 必要な星数が揃っている場合、ステージを解放します。
-     * 
-     * @param stageNumber ステージ番号
-     * @param requiredStars 必要な星数
-     * @param gameState ゲーム状態
-     * @return 解放成功時true
-     */
-    bool unlockStageWithStars(int stageNumber, int requiredStars, GameState& gameState);
-    
-    /**
      * @brief ステージをクリア済みにする
      * @details 指定されたステージ番号のステージをクリア済みにマークします。
      * 
      * @param stageNumber ステージ番号
      */
     void completeStage(int stageNumber);
-    
-    /**
-     * @brief ステージ進行状況をリセットする
-     * @details 全ステージの進行状況をリセットします。
-     */
-    void resetStageProgress();
     
     /**
      * @brief 現在のステージ番号を取得する
@@ -121,54 +90,6 @@ public:
      * @return ステージデータへのポインタ（存在しない場合はnullptr）
      */
     const StageData* getStageData(int stageNumber) const;
-    
-    /**
-     * @brief ステージの星数を取得する
-     * @param stageNumber ステージ番号
-     * @return 星数
-     */
-    int getStageStars(int stageNumber) const;
-    
-    /**
-     * @brief 総星数を取得する
-     * @return 総星数
-     */
-    int getTotalStars() const;
-    
-    /**
-     * @brief ステージの星数を更新する
-     * @param stageNumber ステージ番号
-     * @param newStars 新しい星数
-     */
-    void updateStageStars(int stageNumber, int newStars);
-    
-    /**
-     * @brief 星数の差分を計算する
-     * @param stageNumber ステージ番号
-     * @param newStars 新しい星数
-     * @return 星数の差分
-     */
-    int calculateStarDifference(int stageNumber, int newStars) const;
-    
-    /**
-     * @brief 次のステージに移動する
-     * @details 次のステージに移動します。
-     * 
-     * @param gameState ゲーム状態
-     * @param platformSystem プラットフォームシステム
-     * @return 移動成功時true
-     */
-    bool goToNextStage(GameState& gameState, PlatformSystem& platformSystem);
-    
-    /**
-     * @brief 前のステージに移動する
-     * @details 前のステージに移動します。
-     * 
-     * @param gameState ゲーム状態
-     * @param platformSystem プラットフォームシステム
-     * @return 移動成功時true
-     */
-    bool goToPreviousStage(GameState& gameState, PlatformSystem& platformSystem);
     
     /**
      * @brief 指定ステージに移動する

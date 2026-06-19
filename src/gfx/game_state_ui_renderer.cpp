@@ -6,7 +6,7 @@
 #include "../core/utils/ui_config_manager.h"
 #include "texture_manager.h"
 #include "../core/utils/resource_path.h"
-#include "../game/game_state.h"
+#include "../core/states/game_state.h"
 #include "../game/online_leaderboard_manager.h"
 #include <iostream>
 #include <cmath>
@@ -73,7 +73,7 @@ void GameStateUIRenderer::renderTutorialStageUI(int width, int height, const std
     }else if(currentStep == 10){
         auto explainText1Config = uiConfig.getTutorialStep10ExplainText1Config();
         glm::vec2 explainText1Pos = uiConfig.calculatePosition(explainText1Config.position, width, height);
-        std::string explainText = "THE YELLOW BLOCK IS THE GOAL !";
+        std::string explainText = "THE RAINBOW BLOCK IS THE GOAL !";
         renderText(explainText, explainText1Pos, explainText1Config.color, explainText1Config.scale);
         
         auto explainText2Config = uiConfig.getTutorialStep10ExplainText2Config();
@@ -900,8 +900,6 @@ void GameStateUIRenderer::renderLeaderboardAssist(int width, int height, bool is
 void GameStateUIRenderer::renderLeaderboardUI(int width, int height, int targetStage,
                                              const std::vector<LeaderboardEntry>& entries,
                                              bool isLoading, int selectedIndex) {
-    printf("DEBUG: renderLeaderboardUI called - targetStage: %d, entries: %zu, isLoading: %d\n", 
-           targetStage, entries.size(), isLoading ? 1 : 0);
     
     font.initialize();
     

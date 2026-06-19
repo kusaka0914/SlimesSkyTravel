@@ -15,7 +15,7 @@
 #include <map>
 #include <glm/glm.hpp>
 #include "../gfx/opengl_renderer.h"
-#include "../game/game_state.h"
+#include "../core/states/game_state.h"
 #include "../game/stage_manager.h"
 #include "../game/save_manager.h"
 #include "../game/platform_system.h"
@@ -23,7 +23,6 @@
 #include "../io/input_system.h"
 #include "../io/audio_manager.h"
 #include "../core/constants/game_constants.h"
-#include "../core/error_handler.h"
 #include "../gfx/camera_system.h"
 #include "../core/utils/input_utils.h"
 #include "../core/utils/ui_config_manager.h"
@@ -48,7 +47,6 @@ int main(int argc, char* const argv[]) {
     GLFWwindow* window = glfwCreateWindow(videoMode->width, videoMode->height, 
         "Slime's Sky Travel", nullptr, nullptr);
     if (!window) {
-        ErrorHandler::handleGLFWError("window creation");
         glfwTerminate();
         return -1;
     }
@@ -81,7 +79,6 @@ int main(int argc, char* const argv[]) {
     
     auto renderer = std::make_unique<gfx::OpenGLRenderer>();
     if (!renderer->initialize(window)) {
-        ErrorHandler::handleRendererError("OpenGL renderer initialization");
         glfwDestroyWindow(window);
         glfwTerminate();
         return -1;

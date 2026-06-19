@@ -9,7 +9,7 @@
 #define NOMINMAX
 #endif
 
-#include "game_state.h"
+#include "../core/states/game_state.h"
 #include <string>
 #include <nlohmann/json.hpp>
 

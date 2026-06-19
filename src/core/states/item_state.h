@@ -13,14 +13,14 @@
  * @details アイテムの位置、サイズ、色、収集状態、ID、アニメーション情報を保持します。
  */
 struct Item {
-    glm::vec3 position;
-    glm::vec3 size;
-    glm::vec3 color;
-    bool isCollected;
-    int itemId;
-    float rotationAngle;  // 回転角度（単位: 度）
-    float bobHeight;  // 上下動の高さ（単位: ワールド座標）
-    float bobTimer;  // 上下動タイマー（単位: 秒）
+    glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f);
+    glm::vec3 size = glm::vec3(0.5f, 0.5f, 0.5f);
+    glm::vec3 color = glm::vec3(0.0f, 0.0f, 0.0f);
+    bool isCollected = false;
+    int itemId = 0;
+    float rotationAngle = 0.0f;
+    float bobHeight = 0.0f;
+    float bobTimer = 0.0f;
 };
 
 /**

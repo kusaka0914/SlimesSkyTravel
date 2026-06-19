@@ -8,7 +8,7 @@
 #include <GLFW/glfw3.h>
 #include <map>
 #include <glm/glm.hpp>
-#include "../game/game_state.h"
+#include "../core/states/game_state.h"
 #include "../core/utils/input_utils.h"
 
 /**

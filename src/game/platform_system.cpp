@@ -10,11 +10,10 @@
 #include <cmath>
 #include <glm/gtc/matrix_transform.hpp>
 
-void PlatformSystem::update(float deltaTime, const glm::vec3& playerPos, float absoluteTime, float timeScale) {
+void PlatformSystem::update(float deltaTime, const glm::vec3& playerPos, float absoluteTime) {
     // リプレイモードでは、absoluteTimeは既に各フレーム区間のtimeScaleを考慮した累積ゲーム時間
     // 通常モードでは、absoluteTime = -1.0fなので、deltaTimeを使用
     float actualTime = absoluteTime;
-    // timeScaleパラメータは使用しない（リプレイモードでは既に考慮済み）
     
     for (auto& platform : platforms) {
         std::visit(overloaded{

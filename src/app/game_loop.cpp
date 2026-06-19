@@ -7,6 +7,7 @@
 #include "game_renderer.h"
 #include "input_handler.h"
 #include <thread>
+#include <iostream>
 #include "../core/utils/ui_config_manager.h"
 #include "../core/utils/resource_path.h"
 #include "../game/save_manager.h"
