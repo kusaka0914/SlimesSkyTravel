@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 #include <glm/glm.hpp>
-#include "online_leaderboard_manager.h"
+#include "../../game/online_leaderboard_manager.h"
 
 /**
  * @brief UIの状態を管理する構造体
@@ -34,16 +34,16 @@ struct UIState {
     bool showStageSelectionAssist = false;
     int assistTargetStage = 0;
     
-    bool showLeaderboardAssist = false;  /**< @brief ランキングボードアシスト表示フラグ */
-    bool showLeaderboardUI = false;  /**< @brief ランキングUI表示フラグ */
-    int leaderboardTargetStage = 0;  /**< @brief ランキング表示対象ステージ */
-    std::vector<LeaderboardEntry> leaderboardEntries;  /**< @brief ランキングエントリ */
-    int leaderboardSelectedIndex = 0;  /**< @brief 選択中のランキングエントリインデックス */
-    bool isLoadingLeaderboard = false;  /**< @brief ランキング読み込み中フラグ */
-    bool isLoadingReplay = false;  /**< @brief リプレイ読み込み中フラグ */
-    float leaderboardRetryTimer = 0.0f;  /**< @brief ランキングリトライタイマー（秒） */
-    int leaderboardRetryCount = 0;  /**< @brief ランキングリトライ回数 */
-    glm::vec3 leaderboardPosition = glm::vec3(0.0f, 1.0f, 0.0f);  /**< @brief ランキングボードの位置（JSONから読み込む） */
+    bool showLeaderboardAssist = false;
+    bool showLeaderboardUI = false;
+    int leaderboardTargetStage = 0;
+    std::vector<LeaderboardEntry> leaderboardEntries;
+    int leaderboardSelectedIndex = 0;
+    bool isLoadingLeaderboard = false;
+    bool isLoadingReplay = false;
+    float leaderboardRetryTimer = 0.0f;
+    int leaderboardRetryCount = 0;
+    glm::vec3 leaderboardPosition = glm::vec3(0.0f, 1.0f, 0.0f);
     
     bool showStage0Tutorial = true;
     
@@ -56,9 +56,9 @@ struct UIState {
     };
     TitleScreenPhase titleScreenPhase = TitleScreenPhase::BACKGROUND_FADE_IN;
     
-    bool showPlayerNameInput = false;  /**< @brief プレイヤー名入力画面表示フラグ */
-    std::string playerNameInput = "";  /**< @brief プレイヤー名入力中の文字列 */
-    int playerNameInputCursorPos = 0;  /**< @brief プレイヤー名入力カーソル位置 */
+    bool showPlayerNameInput = false;
+    std::string playerNameInput = "";
+    int playerNameInputCursorPos = 0;
     
     bool isTransitioning = false;
     float transitionTimer = 0.0f;
@@ -71,8 +71,8 @@ struct UIState {
     int pendingStageTransition = -1;
     bool pendingReadyScreen = false;
     bool pendingSkipCountdown = false;
-    bool pendingFadeIn = false;  // フェードアウト完了後、次のフレームでフェードインを開始するためのフラグ
-    bool stageLoadedForFadeIn = false;  // ステージが読み込まれた後、描画が完了するまで待つためのフラグ
+    bool pendingFadeIn = false;
+    bool stageLoadedForFadeIn = false;
     
     bool showEasyModeExplanationUI = false;
     

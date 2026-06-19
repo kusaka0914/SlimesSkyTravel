@@ -7,8 +7,6 @@
 
 #include <string>
 #include <map>
-#include <memory>
-#include <ctime>
 #ifdef _WIN32
     #include <SDL_mixer.h>
 #else
@@ -44,36 +42,12 @@ public:
      * @details 現在再生中のBGMを停止します。
      */
     void stopBGM();
-    
-    /**
-     * @brief BGMを一時停止する
-     * @details 現在再生中のBGMを一時停止します。
-     */
-    void pauseBGM();
-    
-    /**
-     * @brief BGMの再生を再開する
-     * @details 一時停止中のBGMの再生を再開します。
-     */
-    void resumeBGM();
-    
+
     /**
      * @brief BGMの音量を設定する
      * @param volume 音量（0.0～1.0）
      */
     void setBGMVolume(float volume);
-    
-    /**
-     * @brief BGMの音量を取得する
-     * @return 音量（0.0～1.0）
-     */
-    float getBGMVolume() const;
-    
-    /**
-     * @brief BGMが再生中か確認する
-     * @return 再生中の場合true
-     */
-    bool isBGMPlaying() const;
     
     /**
      * @brief 効果音を読み込む
@@ -94,18 +68,6 @@ public:
      * @param volume 音量（0.0～1.0）
      */
     void setSFXVolume(float volume);
-    
-    /**
-     * @brief マスター音量を設定する
-     * @param volume 音量（0.0～1.0）
-     */
-    void setMasterVolume(float volume);
-    
-    /**
-     * @brief マスター音量を取得する
-     * @return 音量（0.0～1.0）
-     */
-    float getMasterVolume() const;
     
     /**
      * @brief 音声システムを初期化する

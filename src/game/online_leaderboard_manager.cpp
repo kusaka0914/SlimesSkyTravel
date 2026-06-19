@@ -18,14 +18,8 @@ static size_t WriteCallback(void* contents, size_t size, size_t nmemb, std::stri
     return totalSize;
 }
 
-void OnlineLeaderboardManager::setBaseUrl(const std::string& url) {
-    baseUrl = url;
-}
-
 void OnlineLeaderboardManager::setPlayerName(const std::string& name) {
     playerName = name;
-    printf("ONLINE: setPlayerName called with: [%s] (length: %zu), playerName is now: [%s]\n", 
-           name.c_str(), name.length(), playerName.c_str());
 }
 
 std::string OnlineLeaderboardManager::getPlayerName() {
@@ -37,17 +31,14 @@ bool OnlineLeaderboardManager::isOnlineEnabled() {
 }
 
 bool OnlineLeaderboardManager::loadConfigFromFile() {
-    // まずassets/config/leaderboard_config.jsonを試す（buildフォルダから実行される場合）
     std::string configPath = "../assets/config/leaderboard_config.json";
     std::ifstream file(configPath);
     
-    // 見つからない場合はassets/config/leaderboard_config.jsonを直接試す
     if (!file.is_open()) {
         configPath = "assets/config/leaderboard_config.json";
         file.open(configPath);
     }
     
-    // それでも見つからない場合はbuild/assets/config/leaderboard_config.jsonを試す
     if (!file.is_open()) {
         configPath = "build/assets/config/leaderboard_config.json";
         file.open(configPath);
@@ -65,12 +56,10 @@ bool OnlineLeaderboardManager::loadConfigFromFile() {
         
         if (jsonData.contains("baseUrl") && jsonData["baseUrl"].is_string()) {
             baseUrl = jsonData["baseUrl"].get<std::string>();
-            printf("Leaderboard Config: Loaded baseUrl from %s: %s\n", configPath.c_str(), baseUrl.c_str());
         }
         
         if (jsonData.contains("enabled") && jsonData["enabled"].is_boolean()) {
             onlineEnabled = jsonData["enabled"].get<bool>();
-            printf("Leaderboard Config: Online enabled: %s\n", onlineEnabled ? "true" : "false");
         }
         
         return true;
@@ -160,38 +149,7 @@ bool OnlineLeaderboardManager::parseLeaderboardJson(const std::string& jsonStr, 
             entry.timestamp = record.value("timestamp", "");
             entry.hasReplay = record.value("hasReplay", false);
             
-            // デバッグ: 取得したデータをログ出力
-            std::cout << "DEBUG: Parsed entry - id: " << entry.id 
-                      << ", playerName: [" << entry.playerName 
-                      << "] (length: " << entry.playerName.length() << "), time: " << entry.time 
-                      << ", hasReplay: " << (entry.hasReplay ? "true" : "false") << std::endl;
-            
             entries.push_back(entry);
-        }
-        
-        return true;
-    } catch (const std::exception& e) {
-        std::cerr << "JSON parse error: " << e.what() << std::endl;
-        return false;
-    }
-}
-
-bool OnlineLeaderboardManager::parseGlobalTopJson(const std::string& jsonStr, std::map<int, LeaderboardEntry>& topRecords) {
-    try {
-        auto json = nlohmann::json::parse(jsonStr);
-        
-        if (!json.contains("topRecords") || !json["topRecords"].is_object()) {
-            return false;
-        }
-        
-        topRecords.clear();
-        for (auto& [key, value] : json["topRecords"].items()) {
-            int stageNumber = std::stoi(key);
-            LeaderboardEntry entry;
-            entry.playerName = value.value("playerName", "");
-            entry.time = value.value("time", 0.0f);
-            entry.timestamp = value.value("timestamp", "");
-            topRecords[stageNumber] = entry;
         }
         
         return true;
@@ -240,10 +198,7 @@ void OnlineLeaderboardManager::submitTime(int stageNumber, float time,
     std::thread([stageNumber, time, callback, replayData]() {
         std::string url = baseUrl + "/api/leaderboard";
         
-        // プレイヤー名を処理（空または非ASCII文字のみの場合は"UNKNOWN"に変換、大文字に変換）
         std::string processedPlayerName = playerName;
-        printf("ONLINE: Submitting time - original playerName: [%s] (length: %zu)\n", 
-               playerName.c_str(), playerName.length());
         if (processedPlayerName.empty()) {
             processedPlayerName = "UNKNOWN";
         } else {
@@ -275,8 +230,6 @@ void OnlineLeaderboardManager::submitTime(int stageNumber, float time,
         
         // リプレイデータがあれば追加
         if (replayData != nullptr) {
-            printf("ONLINE: Processing replay data - stage: %d, clearTime: %.2f, frames: %zu\n",
-                   replayData->stageNumber, replayData->clearTime, replayData->frames.size());
             nlohmann::json replayJson;
             replayJson["stageNumber"] = replayData->stageNumber;
             replayJson["clearTime"] = replayData->clearTime;
@@ -297,18 +250,9 @@ void OnlineLeaderboardManager::submitTime(int stageNumber, float time,
             }
             replayJson["frames"] = framesArray;
             jsonData["replayData"] = replayJson;
-            
-            printf("ONLINE: Submitting time with replay data (%zu frames, JSON size will be large)\n", replayData->frames.size());
-            printf("ONLINE: Replay JSON frames array size: %zu\n", framesArray.size());
-        } else {
-            printf("ONLINE: No replay data provided (replayData is nullptr)\n");
         }
         
-        printf("ONLINE: Submitting time - processed playerName: [%s] (length: %zu)\n", 
-               processedPlayerName.c_str(), processedPlayerName.length());
-        
         std::string jsonStr = jsonData.dump();
-        printf("ONLINE: JSON payload size: %zu bytes\n", jsonStr.length());
         std::string response;
         
         bool success = httpPost(url, jsonStr, response);
@@ -336,8 +280,7 @@ void OnlineLeaderboardManager::fetchReplay(int leaderboardId,
         }
         return;
     }
-    
-    // 別スレッドで非同期実行
+
     std::thread([leaderboardId, callback]() {
         std::string url = baseUrl + "/api/replay/" + std::to_string(leaderboardId);
         std::string response;
@@ -345,35 +288,18 @@ void OnlineLeaderboardManager::fetchReplay(int leaderboardId,
         ReplayData* replayData = nullptr;
         if (httpGet(url, response)) {
             try {
-                printf("ONLINE: Received response for replay ID %d, length: %zu\n", leaderboardId, response.length());
                 auto json = nlohmann::json::parse(response);
-                printf("ONLINE: Parsed JSON - success: %s, has replayData: %s\n",
-                       json.value("success", false) ? "true" : "false",
-                       json.contains("replayData") ? "true" : "false");
                 
                 if (json.value("success", false) && json.contains("replayData")) {
                     replayData = new ReplayData();
                     const auto& replayJson = json["replayData"];
-                    
-                    printf("ONLINE: Replay JSON keys: ");
-                    for (auto it = replayJson.begin(); it != replayJson.end(); ++it) {
-                        printf("%s ", it.key().c_str());
-                    }
-                    printf("\n");
                     
                     replayData->stageNumber = replayJson.value("stageNumber", 0);
                     replayData->clearTime = replayJson.value("clearTime", 0.0f);
                     replayData->recordedDate = replayJson.value("recordedDate", "");
                     replayData->frameRate = replayJson.value("frameRate", 0.1f);
                     
-                    printf("ONLINE: Replay metadata - stage: %d, clearTime: %.2f, frameRate: %.2f\n",
-                           replayData->stageNumber, replayData->clearTime, replayData->frameRate);
-                    printf("ONLINE: Checking for frames - has frames key: %s, is array: %s\n",
-                           replayJson.contains("frames") ? "true" : "false",
-                           (replayJson.contains("frames") && replayJson["frames"].is_array()) ? "true" : "false");
-                    
                     if (replayJson.contains("frames") && replayJson["frames"].is_array()) {
-                        printf("ONLINE: Frames array size: %zu\n", replayJson["frames"].size());
                         for (const auto& frameJson : replayJson["frames"]) {
                             ReplayFrame frame;
                             frame.timestamp = frameJson.value("timestamp", 0.0f);
@@ -390,7 +316,6 @@ void OnlineLeaderboardManager::fetchReplay(int leaderboardId,
                                 frame.playerVelocity.z = frameJson["playerVelocity"][2];
                             }
                             
-                            // timeScaleは後方互換性のため、存在しない場合は1.0fをデフォルト値とする
                             frame.timeScale = frameJson.contains("timeScale") ? frameJson["timeScale"].get<float>() : 1.0f;
                             
                             if (frameJson.contains("itemCollectedStates") && frameJson["itemCollectedStates"].is_array()) {
@@ -401,22 +326,6 @@ void OnlineLeaderboardManager::fetchReplay(int leaderboardId,
                             
                             replayData->frames.push_back(frame);
                         }
-                        printf("ONLINE: Processed %zu frames from JSON\n", replayData->frames.size());
-                    } else {
-                        printf("ONLINE: WARNING - No frames array found in replay JSON\n");
-                    }
-                    
-                    printf("ONLINE: Loaded replay data for leaderboard ID %d (%zu frames)\n", 
-                           leaderboardId, replayData->frames.size());
-                    if (!replayData->frames.empty()) {
-                        printf("ONLINE: First frame - timestamp: %.2f, position: (%.2f, %.2f, %.2f), velocity: (%.2f, %.2f, %.2f)\n",
-                               replayData->frames[0].timestamp,
-                               replayData->frames[0].playerPosition.x,
-                               replayData->frames[0].playerPosition.y,
-                               replayData->frames[0].playerPosition.z,
-                               replayData->frames[0].playerVelocity.x,
-                               replayData->frames[0].playerVelocity.y,
-                               replayData->frames[0].playerVelocity.z);
                     }
                 }
             } catch (const std::exception& e) {
@@ -428,35 +337,8 @@ void OnlineLeaderboardManager::fetchReplay(int leaderboardId,
             callback(replayData);
         }
         
-        // メモリを解放（コールバックでコピーを作成する想定）
         if (replayData) {
             delete replayData;
         }
     }).detach();
 }
-
-void OnlineLeaderboardManager::fetchGlobalTopRecords(
-    std::function<void(const std::map<int, LeaderboardEntry>&)> callback) {
-    if (!onlineEnabled) {
-        if (callback) {
-            callback(std::map<int, LeaderboardEntry>());
-        }
-        return;
-    }
-    
-    // 別スレッドで非同期実行
-    std::thread([callback]() {
-        std::string url = baseUrl + "/api/leaderboard/global/top";
-        std::string response;
-        
-        std::map<int, LeaderboardEntry> topRecords;
-        if (httpGet(url, response)) {
-            parseGlobalTopJson(response, topRecords);
-        }
-        
-        if (callback) {
-            callback(topRecords);
-        }
-    }).detach();
-}
-

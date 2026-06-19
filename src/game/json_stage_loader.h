@@ -9,7 +9,7 @@
 #define NOMINMAX
 #endif
 
-#include "game_state.h"
+#include "../core/states/game_state.h"
 #include "platform_system.h"
 #include <string>
 #include <vector>
@@ -32,29 +32,6 @@ public:
      */
     static bool loadStageFromJSON(const std::string& filename, GameState& gameState, PlatformSystem& platformSystem);
     
-    /**
-     * @brief ステージ情報のみを読み込む
-     * @details プレイヤー位置、ゴール位置、制限時間などのステージ情報のみを読み込みます。
-     * 
-     * @param filename ファイル名
-     * @param gameState ゲーム状態
-     * @return 読み込み成功時true
-     */
-    static bool loadStageInfoFromJSON(const std::string& filename, GameState& gameState);
-    
-    /**
-     * @brief ステージをJSONファイルに保存する
-     * @details エディタ用にステージデータをJSONファイルに保存します。
-     * 
-     * @param filename ファイル名
-     * @param gameState ゲーム状態
-     * @param platformSystem プラットフォームシステム
-     * @param stageNumber ステージ番号
-     * @return 保存成功時true
-     */
-    static bool saveStageToJSON(const std::string& filename, const GameState& gameState, 
-                                const PlatformSystem& platformSystem, int stageNumber);
-    
 private:
     /**
      * @brief ファイルが存在するか確認する
@@ -67,13 +44,9 @@ private:
     static bool parseItems(const nlohmann::json& root, GameState& gameState, PlatformSystem& platformSystem);
     static bool parseStaticPlatforms(const nlohmann::json& root, GameState& gameState, PlatformSystem& platformSystem);
     static bool parsePatrolPlatforms(const nlohmann::json& root, GameState& gameState, PlatformSystem& platformSystem);
-    static bool parseMovingPlatforms(const nlohmann::json& root, GameState& gameState, PlatformSystem& platformSystem);
-    static bool parseRotatingPlatforms(const nlohmann::json& root, GameState& gameState, PlatformSystem& platformSystem);
     static bool parseDisappearingPlatforms(const nlohmann::json& root, GameState& gameState, PlatformSystem& platformSystem);
     static bool parseConsecutiveCyclingPlatforms(const nlohmann::json& root, GameState& gameState, PlatformSystem& platformSystem);
     static bool parseFlyingPlatforms(const nlohmann::json& root, GameState& gameState, PlatformSystem& platformSystem);
-    static bool parseTeleportPlatforms(const nlohmann::json& root, GameState& gameState, PlatformSystem& platformSystem);
-    static bool parseJumpPads(const nlohmann::json& root, GameState& gameState, PlatformSystem& platformSystem);
     static bool parseStageSelectionAreas(const nlohmann::json& root, GameState& gameState, PlatformSystem& platformSystem);
     static bool parseLeaderboardArea(const nlohmann::json& root, GameState& gameState, PlatformSystem& platformSystem);
     static bool parseConditionalCyclingDisappearingPlatforms(const nlohmann::json& root, GameState& gameState, PlatformSystem& platformSystem);

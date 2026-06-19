@@ -13,7 +13,7 @@
 #include <memory>
 #include <map>
 #include <glm/glm.hpp>
-#include "../game/game_state.h"
+#include "../core/states/game_state.h"
 #include "../game/stage_manager.h"
 #include "../game/platform_system.h"
 #include "../gfx/opengl_renderer.h"

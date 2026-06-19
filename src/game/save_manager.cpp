@@ -86,7 +86,6 @@ bool SaveManager::saveGameData(const GameState& gameState) {
         
         saveData["hasShownSecretStarExplanationUI"] = gameState.progress.hasShownSecretStarExplanationUI;
         
-        // プレイヤー名を保存
         saveData["playerName"] = OnlineLeaderboardManager::getPlayerName();
         
         nlohmann::json secretStarClearedJson;
@@ -110,7 +109,7 @@ bool SaveManager::saveGameData(const GameState& gameState) {
             }
         }
         
-        file << saveData.dump(2); // インデント2で整形して保存
+        file << saveData.dump(2);
         file.close();
         
         std::cout << "Game data saved successfully to: " << filePath << std::endl;
@@ -185,12 +184,10 @@ bool SaveManager::loadGameData(GameState& gameState) {
             gameState.progress.hasShownSecretStarExplanationUI = saveData["hasShownSecretStarExplanationUI"];
         }
         
-        // プレイヤー名を読み込み
         if (saveData.contains("playerName") && saveData["playerName"].is_string()) {
             std::string savedPlayerName = saveData["playerName"].get<std::string>();
             if (!savedPlayerName.empty() && savedPlayerName != "Player") {
                 OnlineLeaderboardManager::setPlayerName(savedPlayerName);
-                printf("SAVE: Loaded player name from save file: [%s]\n", savedPlayerName.c_str());
             }
         }
         

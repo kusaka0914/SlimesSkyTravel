@@ -6,21 +6,9 @@
 #include "../physics/physics_system.h"
 #include "../core/constants/game_constants.h"
 #include "audio_manager.h"
-#include "../game/stage_editor.h"
-#include <variant>
-#include <algorithm>
-
-static bool gamepadConnected = false;
-static int gamepadId = GameConstants::InputConstants::DEFAULT_GAMEPAD_ID;
-static bool gamepadButtons[GameConstants::InputConstants::MAX_GAMEPAD_BUTTONS] = {false}; // ボタンの状態を保存
-static bool gamepadButtonsLast[GameConstants::InputConstants::MAX_GAMEPAD_BUTTONS] = {false}; // 前フレームのボタン状態
 
 void InputSystem::mouse_callback(GLFWwindow* window, double xpos, double ypos) {
     GameState* gameState = static_cast<GameState*>(glfwGetWindowUserPointer(window));
-    
-    if (gameState->editorState && gameState->editorState->isActive) {
-        return;
-    }
     
     if (gameState->camera.firstMouse) {
         gameState->camera.lastMouseX = xpos;
@@ -32,55 +20,50 @@ void InputSystem::mouse_callback(GLFWwindow* window, double xpos, double ypos) {
     gameState->camera.lastMouseX = float(xpos);
     gameState->camera.lastMouseY = float(ypos);
     
-    xoffset *= GameConstants::InputConstants::MOUSE_SENSITIVITY;
-    yoffset *= GameConstants::InputConstants::MOUSE_SENSITIVITY;
+    constexpr float MOUSE_SENSITIVITY = 0.1f;
+
+    xoffset *= MOUSE_SENSITIVITY;
+    yoffset *= MOUSE_SENSITIVITY;
+
+    constexpr float MIN_CAMERA_PITCH = -89.0f;
+    constexpr float MAX_CAMERA_PITCH = 89.0f;
     
     if (gameState->skills.isFreeCameraActive) {
         gameState->skills.freeCameraYaw += xoffset;
         gameState->skills.freeCameraPitch -= yoffset;
-        gameState->skills.freeCameraPitch = std::max(GameConstants::InputConstants::MIN_CAMERA_PITCH, 
-                                             std::min(GameConstants::InputConstants::MAX_CAMERA_PITCH, gameState->skills.freeCameraPitch));
+        gameState->skills.freeCameraPitch = std::max(MIN_CAMERA_PITCH, 
+                                             std::min(MAX_CAMERA_PITCH, gameState->skills.freeCameraPitch));
     } else if (gameState->camera.isFirstPersonView) {
         gameState->camera.yaw += xoffset;
         gameState->camera.pitch -= yoffset;
-        gameState->camera.pitch = std::max(GameConstants::InputConstants::MIN_CAMERA_PITCH, 
-                                        std::min(GameConstants::InputConstants::MAX_CAMERA_PITCH, gameState->camera.pitch));
+        gameState->camera.pitch = std::max(MIN_CAMERA_PITCH, 
+                                        std::min(MAX_CAMERA_PITCH, gameState->camera.pitch));
     }
 }
 
 void InputSystem::scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
     GameState* gameState = static_cast<GameState*>(glfwGetWindowUserPointer(window));
-    
-    if (gameState->editorState && gameState->editorState->isActive) {
-        float sensitivity = 2.0f;
-        gameState->skills.freeCameraYaw += float(xoffset) * sensitivity;
-        gameState->skills.freeCameraPitch -= float(yoffset) * sensitivity;
-        gameState->skills.freeCameraPitch = std::max(GameConstants::InputConstants::MIN_CAMERA_PITCH, 
-                                             std::min(GameConstants::InputConstants::MAX_CAMERA_PITCH, gameState->skills.freeCameraPitch));
-        return;
-    }
+
+    constexpr float MIN_CAMERA_DISTANCE = 1.0f;
+    constexpr float MAX_CAMERA_DISTANCE = 50.0f;
     
     gameState->camera.distance -= float(yoffset);
-    gameState->camera.distance = std::max(GameConstants::InputConstants::MIN_CAMERA_DISTANCE, 
-                                       std::min(GameConstants::InputConstants::MAX_CAMERA_DISTANCE, gameState->camera.distance));
+    gameState->camera.distance = std::max(MIN_CAMERA_DISTANCE, 
+                                       std::min(MAX_CAMERA_DISTANCE, gameState->camera.distance));
 }
 
 void InputSystem::processInput(GLFWwindow* window, GameState& gameState, float deltaTime) {
-    float moveSpeed = GameConstants::InputConstants::MOVE_SPEED;
-    
-    glm::vec3 gravityDirection = glm::vec3(0, -1, 0); // デフォルトは下向き
-    PhysicsSystem::isPlayerInGravityZone(gameState, gameState.player.position, gravityDirection);
-    
+    float moveSpeed = 6.0f;
+    glm::vec3 gravityDirection = glm::vec3(0, -1, 0);
     glm::vec3 moveDir(0.0f);
-    
     gameState.player.isMovingBackward = false;
     
     if (gameState.progress.isGoalReached) {
-        return; // ゴール後は移動入力を無視
+        return;
     }
     
     if (gameState.progress.isGameOver) {
-        return; // ゲームオーバー時は移動入力を無視
+        return;
     }
     
     if (gameState.skills.isFreeCameraActive) {
@@ -92,23 +75,23 @@ void InputSystem::processInput(GLFWwindow* window, GameState& gameState, float d
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
             moveDir.x -= cosYaw * cos(pitch);
             moveDir.z -= sinYaw * cos(pitch);
-            gameState.player.isShowingFrontTexture = false;  // 他の移動キーを押したらフロントテクスチャ表示を停止
+            gameState.player.isShowingFrontTexture = false;
         }
         if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
             moveDir.x += cosYaw * cos(pitch);
             moveDir.z += sinYaw * cos(pitch);
             gameState.player.isMovingBackward = true;
-            gameState.player.isShowingFrontTexture = true;  // Sキーを押したらフロントテクスチャ表示を開始
+            gameState.player.isShowingFrontTexture = true;
         }
         if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
             moveDir.x -= sinYaw;
             moveDir.z += cosYaw;
-            gameState.player.isShowingFrontTexture = false;  // 他の移動キーを押したらフロントテクスチャ表示を停止
+            gameState.player.isShowingFrontTexture = false;
         }
         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
             moveDir.x += sinYaw;
             moveDir.z -= cosYaw;
-            gameState.player.isShowingFrontTexture = false;  // 他の移動キーを押したらフロントテクスチャ表示を停止
+            gameState.player.isShowingFrontTexture = false;
         }
     } else if (gameState.camera.isFirstPersonView) {
         float yaw = glm::radians(gameState.camera.yaw);
@@ -119,51 +102,41 @@ void InputSystem::processInput(GLFWwindow* window, GameState& gameState, float d
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
             moveDir.x += cosYaw * cos(pitch);
             moveDir.z += sinYaw * cos(pitch);
-            gameState.player.isShowingFrontTexture = false;  // 他の移動キーを押したらフロントテクスチャ表示を停止
+            gameState.player.isShowingFrontTexture = false;
         }
         if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
             moveDir.x -= cosYaw * cos(pitch);
             moveDir.z -= sinYaw * cos(pitch);
             gameState.player.isMovingBackward = true;
-            gameState.player.isShowingFrontTexture = true;  // Sキーを押したらフロントテクスチャ表示を開始
+            gameState.player.isShowingFrontTexture = true;
         }
         if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
             moveDir.x += sinYaw;
             moveDir.z -= cosYaw;
-            gameState.player.isShowingFrontTexture = false;  // 他の移動キーを押したらフロントテクスチャ表示を停止
+            gameState.player.isShowingFrontTexture = false;
         }
         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
             moveDir.x -= sinYaw;
             moveDir.z += cosYaw;
-            gameState.player.isShowingFrontTexture = false;  // 他の移動キーを押したらフロントテクスチャ表示を停止
+            gameState.player.isShowingFrontTexture = false;
         }
     } else {
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
             moveDir.z += 1.0f;
-            gameState.player.isShowingFrontTexture = false;  // 他の移動キーを押したらフロントテクスチャ表示を停止
+            gameState.player.isShowingFrontTexture = false;
         }
         if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
             moveDir.z -= 1.0f;
             gameState.player.isMovingBackward = true;
-            gameState.player.isShowingFrontTexture = true;  // Sキーを押したらフロントテクスチャ表示を開始
+            gameState.player.isShowingFrontTexture = true;
         }
         if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
             moveDir.x += 1.0f;
-            gameState.player.isShowingFrontTexture = false;  // 他の移動キーを押したらフロントテクスチャ表示を停止
+            gameState.player.isShowingFrontTexture = false;
         }
         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
             moveDir.x -= 1.0f;
-            gameState.player.isShowingFrontTexture = false;  // 他の移動キーを押したらフロントテクスチャ表示を停止
-        }
-    }
-    
-    if (isGamepadConnected()) {
-        glm::vec2 gamepadStick = getGamepadLeftStick();
-        moveDir.x += gamepadStick.x;
-        moveDir.z -= gamepadStick.y; // Y軸を反転（ゲームパッドの上が前進）
-        
-        if (gamepadStick.y > 0.1f) { // 下方向の入力
-            gameState.player.isMovingBackward = true;
+            gameState.player.isShowingFrontTexture = false;
         }
     }
 
@@ -174,7 +147,6 @@ void InputSystem::processInput(GLFWwindow* window, GameState& gameState, float d
         
         if (gameState.skills.isInBurstJumpAir) {
             moveDistance *= 2.0f;
-
         }
         
         glm::vec3 newPosition = gameState.player.position;
@@ -182,7 +154,7 @@ void InputSystem::processInput(GLFWwindow* window, GameState& gameState, float d
         newPosition.z += moveDir.z * moveDistance;
         
         glm::vec3 playerSize = glm::vec3(1.0f, 1.0f, 1.0f);
-        if (!PhysicsSystem::checkPlatformCollisionHorizontal(gameState, newPosition, playerSize)) {
+        if (!PhysicsSystem::checkPlatformCollision(gameState, newPosition, playerSize)) {
             gameState.player.position = newPosition;
         }
     }
@@ -190,21 +162,18 @@ void InputSystem::processInput(GLFWwindow* window, GameState& gameState, float d
 
 void InputSystem::processJumpAndFloat(GLFWwindow* window, GameState& gameState, float deltaTime, const glm::vec3& gravityDirection, PlatformSystem& platformSystem, io::AudioManager& audioManager) {
     if (gameState.progress.isGoalReached) {
-        return; // ゴール後はジャンプ入力を無視
+        return;
     }
     
     if (gameState.progress.isGameOver) {
-        return; // ゲームオーバー時はジャンプ入力を無視
+        return;
     }
     
     static bool spacePressed = false;
-    static bool gamepadJumpPressed = false;
     
     bool spaceCurrentlyPressed = glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS;
-    bool gamepadJumpCurrentlyPressed = isGamepadButtonPressed(0); // Aボタン（通常は0番）
     
-    bool shouldJump = (spaceCurrentlyPressed && !spacePressed) || 
-                     (gamepadJumpCurrentlyPressed && !gamepadJumpPressed);
+    bool shouldJump = spaceCurrentlyPressed && !spacePressed;
 
     if (shouldJump) {
         glm::vec3 playerSize = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -309,53 +278,4 @@ void InputSystem::processJumpAndFloat(GLFWwindow* window, GameState& gameState, 
         }
     }
     spacePressed = spaceCurrentlyPressed;
-    gamepadJumpPressed = gamepadJumpCurrentlyPressed;
 }
-
-void InputSystem::initializeGamepad() {
-    if (glfwJoystickPresent(gamepadId)) {
-        gamepadConnected = true;
-    } else {
-        gamepadConnected = false;
-    }
-}
-
-bool InputSystem::isGamepadConnected() {
-    gamepadConnected = glfwJoystickPresent(gamepadId);
-    return gamepadConnected;
-}
-
-glm::vec2 InputSystem::getGamepadLeftStick() {
-    if (!gamepadConnected) return glm::vec2(0.0f);
-    
-    int axesCount;
-    const float* axes = glfwGetJoystickAxes(gamepadId, &axesCount);
-    if (axesCount >= 2) {
-        float deadzone = 0.1f;
-        float x = std::abs(axes[0]) > deadzone ? axes[0] : 0.0f;
-        float y = std::abs(axes[1]) > deadzone ? axes[1] : 0.0f;
-        return glm::vec2(x, y);
-    }
-    return glm::vec2(0.0f);
-}
-
-bool InputSystem::isGamepadButtonPressed(int button) {
-    if (!gamepadConnected) return false;
-    
-    int buttonCount;
-    const unsigned char* buttons = glfwGetJoystickButtons(gamepadId, &buttonCount);
-    if (button < buttonCount) {
-        return buttons[button] == GLFW_PRESS;
-    }
-    return false;
-}
-
-bool InputSystem::isGamepadButtonJustPressed(int button) {
-    if (!gamepadConnected) return false;
-    
-    bool currentState = isGamepadButtonPressed(button);
-    bool justPressed = currentState && !gamepadButtonsLast[button];
-    gamepadButtonsLast[button] = currentState;
-    return justPressed;
-}
-

@@ -86,7 +86,7 @@ void AudioManager::shutdown() {
     m_sfxChunks.clear();
     
     Mix_CloseAudio();
-    Mix_Quit();  // Mix_Init()で初期化したフォーマットをクリーンアップ
+    Mix_Quit();
     SDL_Quit();
     
     m_initialized = false;
@@ -159,30 +159,6 @@ void AudioManager::stopBGM() {
     }
 }
 
-void AudioManager::pauseBGM() {
-    if (!m_initialized) {
-        return;
-    }
-    
-    if (m_bgmPlaying && !m_bgmPaused) {
-        Mix_PauseMusic();
-        m_bgmPaused = true;
-        std::cout << "BGM paused" << std::endl;
-    }
-}
-
-void AudioManager::resumeBGM() {
-    if (!m_initialized) {
-        return;
-    }
-    
-    if (m_bgmPaused) {
-        Mix_ResumeMusic();
-        m_bgmPaused = false;
-        std::cout << "BGM resumed" << std::endl;
-    }
-}
-
 void AudioManager::setBGMVolume(float volume) {
     m_bgmVolume = std::max(0.0f, std::min(1.0f, volume));
     
@@ -190,14 +166,6 @@ void AudioManager::setBGMVolume(float volume) {
         int sdlVolume = static_cast<int>(m_bgmVolume * m_masterVolume * MIX_MAX_VOLUME);
         Mix_VolumeMusic(sdlVolume);
     }
-}
-
-float AudioManager::getBGMVolume() const {
-    return m_bgmVolume;
-}
-
-bool AudioManager::isBGMPlaying() const {
-    return m_bgmPlaying && !m_bgmPaused;
 }
 
 bool AudioManager::loadSFX(const std::string& name, const std::string& filename) {
@@ -268,24 +236,6 @@ void AudioManager::setSFXVolume(float volume) {
             Mix_VolumeChunk(pair.second, sdlVolume);
         }
     }
-}
-
-void AudioManager::setMasterVolume(float volume) {
-    m_masterVolume = std::max(0.0f, std::min(1.0f, volume));
-    
-    if (m_initialized) {
-        int bgmVolume = static_cast<int>(m_bgmVolume * m_masterVolume * MIX_MAX_VOLUME);
-        Mix_VolumeMusic(bgmVolume);
-        
-        int sfxVolume = static_cast<int>(m_sfxVolume * m_masterVolume * MIX_MAX_VOLUME);
-        for (auto& pair : m_sfxChunks) {
-            Mix_VolumeChunk(pair.second, sfxVolume);
-        }
-    }
-}
-
-float AudioManager::getMasterVolume() const {
-    return m_masterVolume;
 }
 
 std::time_t AudioManager::getFileModificationTime(const std::string& filepath) {

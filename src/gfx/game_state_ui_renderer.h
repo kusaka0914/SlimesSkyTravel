@@ -9,8 +9,8 @@
 #include <string>
 #include "../core/constants/game_constants.h"
 #include "bitmap_font.h"
-#include "../game/game_state.h"
-#include "../game/game_progress_state.h"
+#include "../core/states/game_state.h"
+#include "../core/states/game_progress_state.h"
 
 struct GameState;
 

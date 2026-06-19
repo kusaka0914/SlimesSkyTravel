@@ -9,7 +9,7 @@
 #define NOMINMAX
 #endif
 
-#include "game_state.h"
+#include "../core/states/game_state.h"
 #include "../core/types/platform_types.h"
 #include <vector>
 #include <functional>
@@ -42,9 +42,8 @@ public:
      * @param deltaTime デルタタイム
      * @param playerPos プレイヤー位置（オプション）
      * @param absoluteTime 絶対時間（リプレイモード用、-1の場合は通常更新）
-     * @param timeScale タイムスケール（リプレイモード用、-1の場合は通常更新）
      */
-    void update(float deltaTime, const glm::vec3& playerPos = glm::vec3(0), float absoluteTime = -1.0f, float timeScale = -1.0f);
+    void update(float deltaTime, const glm::vec3& playerPos = glm::vec3(0), float absoluteTime = -1.0f);
     
     /**
      * @brief 衝突判定（インデックス付き）

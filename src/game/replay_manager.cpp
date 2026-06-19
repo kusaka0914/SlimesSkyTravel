@@ -3,7 +3,6 @@
 #endif
 
 #include "replay_manager.h"
-#include "../core/error_handler.h"
 #include <fstream>
 #include <iostream>
 #include <ctime>
@@ -93,20 +92,15 @@ bool ReplayManager::saveReplay(const ReplayData& replayData, int stageNumber) {
             filepath = "../assets/replays/stage" + std::to_string(stageNumber) + "_best.json";
             file.open(filepath);
             if (!file.is_open()) {
-                ErrorHandler::logErrorFormat("Failed to open replay file for writing: %s", filepath.c_str());
                 return false;
             }
         }
         
-        file << jsonData.dump(2);  // インデント付きで保存
+        file << jsonData.dump(2);
         file.close();
-        
-        printf("REPLAY: Saved replay for stage %d (%zu frames, %.2fs)\n", 
-               stageNumber, replayData.frames.size(), replayData.clearTime);
         return true;
         
     } catch (const std::exception& e) {
-        ErrorHandler::logErrorFormat("Failed to save replay: %s", e.what());
         return false;
     }
 }
@@ -121,7 +115,6 @@ bool ReplayManager::loadReplay(ReplayData& replayData, int stageNumber) {
         
         std::ifstream file(filepath);
         if (!file.is_open()) {
-            ErrorHandler::logErrorFormat("Failed to open replay file: %s", filepath.c_str());
             return false;
         }
         
@@ -167,13 +160,9 @@ bool ReplayManager::loadReplay(ReplayData& replayData, int stageNumber) {
                 replayData.frames.push_back(frame);
             }
         }
-        
-        printf("REPLAY: Loaded replay for stage %d (%zu frames, %.2fs)\n", 
-               stageNumber, replayData.frames.size(), replayData.clearTime);
         return true;
         
     } catch (const std::exception& e) {
-        ErrorHandler::logErrorFormat("Failed to load replay: %s", e.what());
         return false;
     }
 }

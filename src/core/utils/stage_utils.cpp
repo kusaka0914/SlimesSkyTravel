@@ -3,80 +3,12 @@
 #endif
 
 #include "stage_utils.h"
-#include "../../game/game_state.h"
+#include "../states/game_state.h"
 #include "../../game/platform_system.h"
 #include <iostream>
 
 namespace StageUtils {
-
-void initializeItems(GameState& gameState) {
-    gameState.items.items.clear();
-    gameState.items.collectedItems = 0;
-}
-
-void createItemsFromConfig(GameState& gameState, const std::vector<ItemConfig>& itemConfigs) {
-    for (int i = 0; i < itemConfigs.size(); i++) {
-        Item item;
-        item.position = itemConfigs[i].position + glm::vec3(0, 1, 0);
-        item.size = glm::vec3(0.5f, 0.5f, 0.5f);
-        item.color = itemConfigs[i].color;
-        item.isCollected = false;
-        item.itemId = i + 1;
-        item.rotationAngle = 0.0f;
-        item.bobHeight = 0.0f;
-        item.bobTimer = 0.0f;
-        gameState.items.items.push_back(item);
-        
-        printf("Created %s at position (%.1f, %.1f, %.1f)\n", 
-               itemConfigs[i].description.c_str(), 
-               item.position.x, item.position.y, item.position.z);
-    }
-}
-
-void initializeItemsWithConfig(GameState& gameState, const std::vector<ItemConfig>& itemConfigs) {
-    initializeItems(gameState);
-    createItemsFromConfig(gameState, itemConfigs);
-}
-
-void createItemPlatforms(PlatformSystem& platformSystem, const std::vector<ItemConfig>& itemConfigs) {
-    for (int i = 0; i < itemConfigs.size(); i++) {
-        platformSystem.addPlatform(StaticPlatform(
-            itemConfigs[i].position, glm::vec3(3, 1, 3), glm::vec3(0.2f, 0.6f, 1.0f)
-        ));
-    }
-}
-
-void createItems(GameState& gameState, PlatformSystem& platformSystem,
-                std::initializer_list<std::tuple<std::tuple<float, float, float>, glm::vec3, std::string>> items) {
-    std::vector<ItemConfig> itemConfigs;
-    for (const auto& item : items) {
-        const auto& pos = std::get<0>(item);
-        itemConfigs.push_back({
-            glm::vec3(std::get<0>(pos), std::get<1>(pos), std::get<2>(pos)),
-            std::get<1>(item),
-            std::get<2>(item)
-        });
-    }
-    initializeItemsWithConfig(gameState, itemConfigs);
-    createItemPlatforms(platformSystem, itemConfigs);
-}
-
-void createStaticPlatforms(GameState& gameState, PlatformSystem& platformSystem,
-                          std::initializer_list<std::tuple<std::tuple<float, float, float>, std::tuple<float, float, float>, glm::vec3, std::string>> platforms) {
-    for (const auto& platform : platforms) {
-        const auto& pos = std::get<0>(platform);
-        const auto& size = std::get<1>(platform);
-        glm::vec3 position = glm::vec3(std::get<0>(pos), std::get<1>(pos), std::get<2>(pos));
-        glm::vec3 sizeVec = glm::vec3(std::get<0>(size), std::get<1>(size), std::get<2>(size));
-        glm::vec3 color = std::get<2>(platform);
-        std::string description = std::get<3>(platform);
-        
-        platformSystem.addPlatform(StaticPlatform(position, sizeVec, color));
-        printf("Created %s at position (%.1f, %.1f, %.1f)\n", 
-               description.c_str(), position.x, position.y, position.z);
-    }
-}
-
+    
 void createPatrolPlatforms(PlatformSystem& platformSystem, const std::vector<PatrolConfig>& patrolConfigs) {
     for (const auto& config : patrolConfigs) {
         platformSystem.addPlatform(PatrollingPlatform(
@@ -154,9 +86,6 @@ void createFlyingPlatforms(GameState& gameState, PlatformSystem& platformSystem,
         std::string description = std::get<6>(platform);
         
         platformSystem.addPlatform(FlyingPlatform(position, sizeVec, color, spawnPosition, targetPosition, speed, range));
-        printf("Created %s at (%.1f, %.1f, %.1f) with spawn at (%.1f, %.1f, %.1f)\n", 
-               description.c_str(), position.x, position.y, position.z,
-               spawnPosition.x, spawnPosition.y, spawnPosition.z);
     }
 }
 
@@ -167,10 +96,6 @@ void createCyclingDisappearingPlatforms(GameState& gameState, PlatformSystem& pl
             config.position, config.size, config.color,
             config.visibleTime, config.invisibleTime, config.initialTimer
         ));
-        printf("Created %s at (%.1f, %.1f, %.1f) with cycle %.1fs visible, %.1fs invisible\n", 
-               config.description.c_str(),
-               config.position.x, config.position.y, config.position.z,
-               config.visibleTime, config.invisibleTime);
     }
 }
 
@@ -206,8 +131,6 @@ void createConsecutiveCyclingPlatforms(GameState& gameState, PlatformSystem& pla
                 visibleTime + invisibleTime, visibleTime, blinkTime, initialTimer
             ));
         }
-        printf("Created %d consecutive cycling platforms from (%.1f, %.1f, %.1f) in direction (%.1f, %.1f, %.1f) with %.1f spacing (reverse timer: %s)\n",
-               count, startPosition.x, startPosition.y, startPosition.z, directionVec.x, directionVec.y, directionVec.z, spacing, reverseTimer ? "true" : "false");
     }
 }
 
@@ -243,19 +166,6 @@ void createConsecutiveCyclingPlatforms(GameState& gameState, PlatformSystem& pla
                 visibleTime + invisibleTime, visibleTime, blinkTime, initialTimer
             ));
         }
-        printf("Created %d consecutive cycling platforms from (%.1f, %.1f, %.1f) in direction (%.1f, %.1f, %.1f) with %.1f spacing (reverse timer: %s)\n",
-               count, startPosition.x, startPosition.y, startPosition.z, directionVec.x, directionVec.y, directionVec.z, spacing, reverseTimer ? "true" : "false");
-    }
-}
-
-void createStaticPlatformsFromConfig(GameState& gameState, PlatformSystem& platformSystem, const std::vector<StaticPlatformConfig>& configs) {
-    for (const auto& config : configs) {
-        platformSystem.addPlatform(StaticPlatform(
-            config.position, config.size, config.color
-        ));
-        printf("Created %s at position (%.1f, %.1f, %.1f)\n", 
-               config.description.c_str(), 
-               config.position.x, config.position.y, config.position.z);
     }
 }
 
@@ -266,8 +176,6 @@ void createPatrolPlatformsFromConfig(GameState& gameState, PlatformSystem& platf
                 config.points[0], glm::vec3(3, 1, 3), glm::vec3(0.8f, 0.4f, 0.2f),
                 config.points, 2.0f
             ));
-            printf("Created %s with %zu patrol points\n", 
-                   config.description.c_str(), config.points.size());
         }
     }
 }

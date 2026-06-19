@@ -9,7 +9,6 @@
 #include "../core/utils/ui_config_manager.h"
 #include "../core/utils/resource_path.h"
 #include "../gfx/minimap_renderer.h"
-#include "../game/stage_editor.h"
 #ifdef __APPLE__
     #include <OpenGL/gl.h>
 #else
@@ -28,12 +27,6 @@ void GameRenderer::renderFrame(GLFWwindow* window, GameState& gameState, StageMa
                     std::unique_ptr<gfx::GameStateUIRenderer>& gameStateUIRenderer,
                     std::map<int, InputUtils::KeyState>& keyStates,
                     float deltaTime) {
-        EditorState* editorState = gameState.editorState;
-        if (!editorState) {
-            static EditorState defaultEditorState;
-            editorState = &defaultEditorState;
-        }
-        
         static float gameUIFileCheckTimer = 0.0f;
         gameUIFileCheckTimer += deltaTime;
         if (gameUIFileCheckTimer >= 0.5f) {
@@ -103,53 +96,9 @@ void GameRenderer::renderFrame(GLFWwindow* window, GameState& gameState, StageMa
         
         GameRenderer::prepareFrame(window, gameState, stageManager, renderer, width, height, deltaTime);
         
-        if (editorState->isActive) {
-            CameraConfig cameraConfig = CameraSystem::calculateCameraConfig(gameState, stageManager, window, deltaTime);
-            StageEditor::renderGrid(cameraConfig.position, editorState->gridSize, 20);
-            
-            if (editorState->showPreview && editorState->currentMode == EditorMode::PLACE) {
-                glPushMatrix();
-                glTranslatef(editorState->previewPosition.x, editorState->previewPosition.y, editorState->previewPosition.z);
-                glColor3f(0.5f, 1.0f, 0.5f);  // 薄い緑色
-                glBegin(GL_LINE_LOOP);
-                float halfSize = 2.0f;
-                glVertex3f(-halfSize, 0, -halfSize);
-                glVertex3f( halfSize, 0, -halfSize);
-                glVertex3f( halfSize, 0,  halfSize);
-                glVertex3f(-halfSize, 0,  halfSize);
-                glEnd();
-                glPopMatrix();
-            }
-        }
-        
         uiRenderer->setWindowSize(width, height);
         
         GameRenderer::renderPlatforms(platformSystem, renderer, gameState, stageManager);
-        
-        for (const auto& zone : gameState.gravityZones) {
-            if (zone.isActive) {
-                renderer->renderer3D.renderBoxWithAlpha(zone.position, GameConstants::Colors::GRAVITY_ZONE_COLOR, 
-                                           zone.size, GameConstants::Colors::GRAVITY_ZONE_ALPHA);
-            }
-        }
-        
-        for (const auto& switch_obj : gameState.switches) {
-            glm::vec3 switchColor = switch_obj.color;
-            if (switch_obj.isPressed) {
-                switchColor *= 0.7f;
-            }
-            renderer->renderer3D.renderCube(switch_obj.position, switchColor, switch_obj.size.x);
-        }
-        
-        for (const auto& cannon : gameState.cannons) {
-            if (cannon.isActive) {
-                glm::vec3 color = cannon.color;
-                if (cannon.cooldownTimer > 0.0f) {
-                    color *= 0.5f;
-                }
-                renderer->renderer3D.renderCube(cannon.position, color, cannon.size.x);
-            }
-        }
         
         static GLuint itemFirstTexture = 0;
         if (itemFirstTexture == 0) {
@@ -677,11 +626,6 @@ void GameRenderer::renderFrame(GLFWwindow* window, GameState& gameState, StageMa
         auto controlsTextConfig = uiConfig.getControlsTextConfig();
         glm::vec2 controlsTextPos = uiConfig.calculatePosition(controlsTextConfig.position, width, height);
         uiRenderer->renderText(controlsText, controlsTextPos, controlsTextConfig.color, controlsTextConfig.scale);
-        
-        if (editorState && editorState->isActive) {
-            StageEditor::renderSelectionHighlight(*editorState, platformSystem, gameState);
-            StageEditor::renderEditorUI(window, *editorState, gameState, uiRenderer);
-        }
         
         if (gameState.ui.isTransitioning) {
             const float FADE_DURATION = 0.5f;

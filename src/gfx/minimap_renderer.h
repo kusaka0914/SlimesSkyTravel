@@ -7,7 +7,7 @@
 
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
-#include "../game/game_state.h"
+#include "../core/states/game_state.h"
 #include "../game/platform_system.h"
 #include "texture_manager.h"
 

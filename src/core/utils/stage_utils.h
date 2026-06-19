@@ -82,59 +82,6 @@ struct CyclingDisappearingConfig {
 namespace StageUtils {
 
 /**
- * @brief アイテムを初期化する
- * @param gameState ゲーム状態
- */
-void initializeItems(GameState& gameState);
-
-/**
- * @brief 設定からアイテムを作成する
- * @param gameState ゲーム状態
- * @param itemConfigs アイテム設定のベクター
- */
-void createItemsFromConfig(GameState& gameState, const std::vector<ItemConfig>& itemConfigs);
-
-/**
- * @brief 設定でアイテムを初期化する
- * @param gameState ゲーム状態
- * @param itemConfigs アイテム設定のベクター
- */
-void initializeItemsWithConfig(GameState& gameState, const std::vector<ItemConfig>& itemConfigs);
-
-/**
- * @brief アイテムプラットフォームを作成する
- * @param platformSystem プラットフォームシステム
- * @param itemConfigs アイテム設定のベクター
- */
-void createItemPlatforms(PlatformSystem& platformSystem, const std::vector<ItemConfig>& itemConfigs);
-
-/**
- * @brief 可変長のアイテムを生成する
- * @param gameState ゲーム状態
- * @param platformSystem プラットフォームシステム
- * @param items アイテムの初期化リスト
- */
-void createItems(GameState& gameState, PlatformSystem& platformSystem,
-                std::initializer_list<std::tuple<std::tuple<float, float, float>, glm::vec3, std::string>> items);
-
-/**
- * @brief 静的プラットフォームを生成する
- * @param gameState ゲーム状態
- * @param platformSystem プラットフォームシステム
- * @param platforms プラットフォームの初期化リスト
- */
-void createStaticPlatforms(GameState& gameState, PlatformSystem& platformSystem,
-                          std::initializer_list<std::tuple<std::tuple<float, float, float>, std::tuple<float, float, float>, glm::vec3, std::string>> platforms);
-
-/**
- * @brief 設定から静的プラットフォームを生成する
- * @param gameState ゲーム状態
- * @param platformSystem プラットフォームシステム
- * @param configs プラットフォーム設定のベクター
- */
-void createStaticPlatformsFromConfig(GameState& gameState, PlatformSystem& platformSystem, const std::vector<StaticPlatformConfig>& configs);
-
-/**
  * @brief 設定から巡回プラットフォームを生成する
  * @param gameState ゲーム状態
  * @param platformSystem プラットフォームシステム

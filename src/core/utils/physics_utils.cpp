@@ -3,7 +3,7 @@
 #endif
 
 #include "physics_utils.h"
-#include "../../game/game_state.h"
+#include "../states/game_state.h"
 
 namespace PhysicsUtils {
 

@@ -1,5 +1,4 @@
 #include "ui_config_manager.h"
-#include "../error_handler.h"
 #include <fstream>
 #include <iostream>
 #include <vector>
@@ -3443,7 +3442,6 @@ namespace UIConfig {
             return true;
             
         } catch (const std::exception& e) {
-            ErrorHandler::logErrorFormat("UI Config: Error loading config: %s", e.what());
             configLoaded = false;
             return false;
         }
