@@ -7,6 +7,7 @@
 
 #include <string>
 #include <map>
+#include <ctime>
 #ifdef _WIN32
     #include <SDL_mixer.h>
 #else
