@@ -1,5 +1,8 @@
 #include "audio_manager.h"
 #include <iostream>
+#include <ctime>
+#include <map>
+#include <string>
 #include <filesystem>
 #ifdef _WIN32
     #include <SDL.h>
